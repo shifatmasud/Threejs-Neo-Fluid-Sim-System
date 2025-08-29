@@ -1383,18 +1383,35 @@ const rippleSplatShader = `
         
         vec2 prevCenter = uPrevCenter;
         prevCenter.x *= uAspectRatio;
+        
+        float intensity = 0.0;
+        bool is_click = distance(center, prevCenter) < 0.0001;
 
-        // Calculate distance to the line segment of cursor movement
-        float dist = distToSegment(p, prevCenter, center);
+        if (is_click) {
+            // Enhanced "drop" effect for clicks for a more satisfying plop.
+            float dist_to_center = distance(p, center);
+            float radius = uRadius * 0.7; // Use a slightly larger radius for the effect.
 
-        // A softer falloff for a more gentle 'wake'
-        float intensity = 1.0 - smoothstep(0.0, uRadius * 0.5, dist);
+            // A sharp central depression (the "pluck").
+            float drop = -pow(1.0 - smoothstep(0.0, radius, dist_to_center), 2.0) * 1.5;
+            
+            // A surrounding raised ring to displace the "water".
+            float ring_dist = abs(dist_to_center - radius * 0.5);
+            float ring = pow(1.0 - smoothstep(0.0, radius * 0.4, ring_dist), 2.0);
+            
+            // Combine them, the strength of the click is higher.
+            intensity = (drop + ring * 0.5) * uStrength * 2.5; 
+
+        } else {
+            // Original wake effect for drags.
+            float dist = distToSegment(p, prevCenter, center);
+            // Pluck the surface downwards to create a trough with a more defined falloff.
+            intensity = -pow(1.0 - smoothstep(0.0, uRadius * 0.5, dist), 1.5) * uStrength;
+        }
+
 
         vec2 base = texture2D(uTarget, vUv).rg;
-        
-        // Pluck the surface downwards to create a trough with a more defined falloff
-        base.r -= pow(intensity, 1.5) * uStrength;
-
+        base.r += intensity;
         gl_FragColor = vec4(base, 0.0, 1.0);
     }
 `;
@@ -1987,7 +2004,7 @@ const useFluidSimulation = (
                         rippleSplatMaterial.uniforms.uRadius.value = paramsRef.current.uWaveSize;
                         
                         const hoverStrength = Math.min(speed * 2.0, 0.05);
-                        const clickStrength = button === 0 ? 0.2 : 0;
+                        const clickStrength = button === 0 ? 0.3 : 0; // Increased for a more impactful click
                         rippleSplatMaterial.uniforms.uStrength.value = hoverStrength + clickStrength;
                         
                         blit(sim.fbo.ripples.write, rippleSplatMaterial);

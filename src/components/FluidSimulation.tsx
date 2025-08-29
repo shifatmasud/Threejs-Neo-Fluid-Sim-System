@@ -37,6 +37,8 @@ interface Uniforms {
     uSSR_Falloff: number;
     uSSR_Samples: number;
     uParticleRate: number;
+    uParticleSize: number;
+    uParticleAdvection: number;
     uParticleColor: THREE.Color;
     uCausticsIntensity: number;
     uLightDepth: number;
@@ -52,7 +54,7 @@ interface Uniforms {
 }
 
 interface SimParams {
-    velocityDissipation: number;
+    waveDecay: number;
     densityDissipation: number;
     temperatureDissipation: number;
 }
@@ -76,103 +78,107 @@ const versions: Version[] = [
         name: 'Neo Water',
         uniforms: {
             uArtisticBlend: 0.0,
-            uDisplacementScale: 0.12,
-            uVelocityShiftScale: 0.002,
+            uDisplacementScale: 0.139,
+            uVelocityShiftScale: 0.0045,
             uDensityShiftScale: 0.002,
             uWaterColor: new THREE.Color(0.7, 0.85, 0.95),
             uInkColor: new THREE.Color(0.8, 0.9, 1.0),
-            uVolumeFactor: 0.15,
-            uInkStrength: 0.8,
-            uShininess: 300.0,
+            uVolumeFactor: 0.2,
+            uInkStrength: 1.0,
+            uShininess: 496.0,
             uFresnelColor: new THREE.Color(1.0, 1.0, 1.0),
-            uFresnelIntensity: 3.0,
+            uFresnelIntensity: 3.7,
             uGlowColor: new THREE.Color(0.8, 0.9, 1.0),
-            uGlowPower: 2.0,
+            uGlowPower: 5.5,
             uInkGeneration: 0.05,
             uWaveSize: 0.1,
             uWaveSteepness: 0.1,
             uWaveComplexity: 0.01,
             uWaveDetail: 0.008,
-            uFeedRate: 0.0,
-            uKillRate: 0.0,
-            uVorticity: 15.0,
-            uReactionForce: 0.0,
+            uFeedRate: 0.028,
+            uKillRate: 0.047,
+            uVorticity: 2.1,
+            uReactionForce: 0.22,
             uBuoyancy: 0.0,
-            uAmbientTemperature: 0.0,
+            uAmbientTemperature: 0.13,
             uSplatTemperature: 0.0,
             uBorderThickness: 0.0,
             uBorderColor: new THREE.Color(0.0, 0.0, 0.0),
-            uSurfaceTension: 0.2,
-            uChiselStrength: 1.5,
-            uSSR_Strength: 0.8,
-            uSSR_Falloff: 2.5,
-            uSSR_Samples: 12,
+            uSurfaceTension: 0.11,
+            uChiselStrength: 2.14,
+            uSSR_Strength: 0.12,
+            uSSR_Falloff: 0.9,
+            uSSR_Samples: 7,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
-            uCausticsIntensity: 5.0,
+            uCausticsIntensity: 4.1,
             uLightDepth: 0.7,
-            uSurfaceDetailStrength: 0.4,
+            uSurfaceDetailStrength: 0.0,
             uFlowSpeed: 5.0,
-            uRippleStrength: 1.2,
+            uRippleStrength: 0.0,
             uRippleDamping: 0.995,
-            uRippleSpeed: 1.2,
+            uRippleSpeed: 1.0,
             uLight1Pos: new THREE.Vector3(0.9, 0.9, 0.5),
             uLight1Color: new THREE.Color(1.0, 1.0, 1.0),
             uLight2Pos: new THREE.Vector3(0.1, 0.1, 0.5),
             uLight2Color: new THREE.Color(0.2, 0.5, 1.0),
         },
-        simParams: { velocityDissipation: 0.99, densityDissipation: 0.98, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.992, densityDissipation: 0.949, temperatureDissipation: 0.98 }
     },
     {
         name: 'Mercury',
         uniforms: {
-            uArtisticBlend: 0.1,
-            uDisplacementScale: 0.1,
+            uArtisticBlend: 0.0,
+            uDisplacementScale: 0.17,
             uVelocityShiftScale: 0.0005,
-            uDensityShiftScale: 0.0005,
+            uDensityShiftScale: 0.0171,
             uWaterColor: new THREE.Color(0.15, 0.18, 0.2),
             uInkColor: new THREE.Color(1.0, 1.0, 1.0),
-            uVolumeFactor: 1.0,
-            uInkStrength: 6.0,
-            uShininess: 1000.0,
+            uVolumeFactor: 0.55,
+            uInkStrength: 3.25,
+            uShininess: 190.0,
             uFresnelColor: new THREE.Color(0.9, 0.95, 1.0),
-            uFresnelIntensity: 4.0,
+            uFresnelIntensity: 4.7,
             uGlowColor: new THREE.Color(0.8, 0.9, 1.0),
-            uGlowPower: 1.0,
+            uGlowPower: 4.8,
             uInkGeneration: 0.0,
             uWaveSize: 0.08,
             uWaveSteepness: 0.15,
-            uWaveComplexity: 0.0,
-            uWaveDetail: 0.0,
-            uFeedRate: 0.0,
-            uKillRate: 0.0,
-            uVorticity: 0.0,
-            uReactionForce: 0.0,
-            uBuoyancy: 0.0,
-            uAmbientTemperature: 0.0,
+            uWaveComplexity: 0.116,
+            uWaveDetail: 0.031,
+            uFeedRate: 0.026,
+            uKillRate: 0.053,
+            uVorticity: 2.7,
+            uReactionForce: 0.91,
+            uBuoyancy: 0.77,
+            uAmbientTemperature: 0.24,
             uSplatTemperature: 0.0,
             uBorderThickness: 0.0,
             uBorderColor: new THREE.Color(0.0, 0.0, 0.0),
-            uSurfaceTension: 1.5,
+            uSurfaceTension: 0.61,
             uChiselStrength: 3.0,
-            uSSR_Strength: 2.5,
+            uSSR_Strength: 0.17,
             uSSR_Falloff: 1.5,
             uSSR_Samples: 25,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.0,
             uLightDepth: 0.1,
-            uSurfaceDetailStrength: 0.8,
-            uFlowSpeed: 1.0,
-            uRippleStrength: 0.4,
+            uSurfaceDetailStrength: 0.01,
+            uFlowSpeed: 5.5,
+            uRippleStrength: 0.0,
             uRippleDamping: 0.95,
-            uRippleSpeed: 0.2,
+            uRippleSpeed: 0.1,
             uLight1Pos: new THREE.Vector3(1.0, 1.0, 0.8),
             uLight1Color: new THREE.Color(1.0, 1.0, 1.0),
             uLight2Pos: new THREE.Vector3(-0.5, -0.5, 0.5),
             uLight2Color: new THREE.Color(0.5, 0.5, 0.5),
         },
-        simParams: { velocityDissipation: 0.98, densityDissipation: 0.96, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.968, densityDissipation: 0.973, temperatureDissipation: 0.98 }
     },
     {
         name: 'Crystal Clear',
@@ -210,12 +216,14 @@ const versions: Version[] = [
             uSSR_Falloff: 2.8,
             uSSR_Samples: 0,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.1,
             uLightDepth: 0.6,
             uSurfaceDetailStrength: 0.04,
             uFlowSpeed: 0.9,
-            uRippleStrength: 1.0,
+            uRippleStrength: 0.0,
             uRippleDamping: 0.913,
             uRippleSpeed: 1.0,
             uLight1Pos: new THREE.Vector3(0.5, 0.5, 0.6),
@@ -223,7 +231,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(-0.5, -0.5, 0.4),
             uLight2Color: new THREE.Color(0.5, 0.8, 1.0),
         },
-        simParams: { velocityDissipation: 0.856, densityDissipation: 0.927, temperatureDissipation: 0.88 }
+        simParams: { waveDecay: 0.856, densityDissipation: 0.927, temperatureDissipation: 0.88 }
     },
     {
         name: 'Sora',
@@ -261,12 +269,14 @@ const versions: Version[] = [
             uSSR_Falloff: 4.3,
             uSSR_Samples: 2,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 3.2,
             uLightDepth: 0.4,
             uSurfaceDetailStrength: 0.01,
             uFlowSpeed: 8.0,
-            uRippleStrength: 1.52,
+            uRippleStrength: 0.0,
             uRippleDamping: 0.917,
             uRippleSpeed: 1.26,
             uLight1Pos: new THREE.Vector3(0.8, 0.2, 0.7),
@@ -274,15 +284,15 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.2, 0.8, 0.3),
             uLight2Color: new THREE.Color(0.0, 0.0, 0.0),
         },
-        simParams: { velocityDissipation: 0.976, densityDissipation: 0.88, temperatureDissipation: 0.885 }
+        simParams: { waveDecay: 0.976, densityDissipation: 0.88, temperatureDissipation: 0.885 }
     },
     {
         name: 'Rainbow Flare',
         uniforms: {
             uArtisticBlend: 0.8,
             uDisplacementScale: 0.08,
-            uVelocityShiftScale: 0.01,
-            uDensityShiftScale: 0.04,
+            uVelocityShiftScale: 0.004,
+            uDensityShiftScale: 0.01,
             uWaterColor: new THREE.Color(0.05, 0.0, 0.1),
             uInkColor: new THREE.Color(1.0, 1.0, 1.0),
             uVolumeFactor: 0.3,
@@ -291,7 +301,7 @@ const versions: Version[] = [
             uFresnelColor: new THREE.Color(1.0, 0.7, 1.0),
             uFresnelIntensity: 3.0,
             uGlowColor: new THREE.Color(0.8, 0.9, 1.0),
-            uGlowPower: 4.0,
+            uGlowPower: 2.5,
             uInkGeneration: 0.05,
             uWaveSize: 0.1,
             uWaveSteepness: 0.06,
@@ -311,7 +321,9 @@ const versions: Version[] = [
             uSSR_Strength: 0.2,
             uSSR_Falloff: 2.0,
             uSSR_Samples: 5,
-            uParticleRate: 0.8,
+            uParticleRate: 0.1,
+            uParticleSize: 3.0,
+            uParticleAdvection: 0.3,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.2,
             uLightDepth: 0.5,
@@ -325,7 +337,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(1.0, 0.5, 0.5),
             uLight2Color: new THREE.Color(0.2, 0.2, 1.0),
         },
-        simParams: { velocityDissipation: 0.985, densityDissipation: 0.99, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.99, densityDissipation: 0.99, temperatureDissipation: 0.98 }
     },
     {
         name: 'Living Ink',
@@ -350,7 +362,7 @@ const versions: Version[] = [
             uWaveDetail: 0.005,
             uFeedRate: 0.037,
             uKillRate: 0.06,
-            uVorticity: 30.0,
+            uVorticity: 20.0,
             uReactionForce: 0.8,
             uBuoyancy: 0.05,
             uAmbientTemperature: 0.0,
@@ -363,6 +375,8 @@ const versions: Version[] = [
             uSSR_Falloff: 2.5,
             uSSR_Samples: 8,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.0,
             uLightDepth: 0.5,
@@ -376,7 +390,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.5, 0.0, 0.4),
             uLight2Color: new THREE.Color(1.0, 1.0, 1.0),
         },
-        simParams: { velocityDissipation: 0.99, densityDissipation: 0.998, temperatureDissipation: 0.99 }
+        simParams: { waveDecay: 0.992, densityDissipation: 0.996, temperatureDissipation: 0.99 }
     },
     {
         name: 'Luminous Gel',
@@ -393,7 +407,7 @@ const versions: Version[] = [
             uFresnelColor: new THREE.Color(1.0, 0.9, 0.2),
             uFresnelIntensity: 2.5,
             uGlowColor: new THREE.Color(1.0, 0.1, 0.3),
-            uGlowPower: 3.0,
+            uGlowPower: 2.0,
             uInkGeneration: 0.1,
             uWaveSize: 0.08,
             uWaveSteepness: 0.04,
@@ -414,12 +428,14 @@ const versions: Version[] = [
             uSSR_Falloff: 1.0,
             uSSR_Samples: 0,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.1,
             uLightDepth: 0.3,
             uSurfaceDetailStrength: 0.05,
             uFlowSpeed: 1.0,
-            uRippleStrength: 0.05,
+            uRippleStrength: 0.0,
             uRippleDamping: 0.92,
             uRippleSpeed: 0.1,
             uLight1Pos: new THREE.Vector3(0.7, 0.7, 0.4),
@@ -427,7 +443,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.3, 0.3, 0.6),
             uLight2Color: new THREE.Color(1.0, 0.9, 0.2),
         },
-        simParams: { velocityDissipation: 0.96, densityDissipation: 0.97, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.98, densityDissipation: 0.98, temperatureDissipation: 0.98 }
     },
     {
         name: 'Liquid Chrome',
@@ -452,7 +468,7 @@ const versions: Version[] = [
             uWaveDetail: 0.005,
             uFeedRate: 0.0,
             uKillRate: 0.0,
-            uVorticity: 20.0,
+            uVorticity: 8.0,
             uReactionForce: 0.0,
             uBuoyancy: 0.0,
             uAmbientTemperature: 0.0,
@@ -465,12 +481,14 @@ const versions: Version[] = [
             uSSR_Falloff: 1.5,
             uSSR_Samples: 20,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.0,
             uLightDepth: 0.2,
             uSurfaceDetailStrength: 0.6,
             uFlowSpeed: 1.0,
-            uRippleStrength: 0.3,
+            uRippleStrength: 0.15,
             uRippleDamping: 0.97,
             uRippleSpeed: 0.6,
             uLight1Pos: new THREE.Vector3(0.2, 0.8, 0.7),
@@ -478,7 +496,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.8, 0.2, 0.3),
             uLight2Color: new THREE.Color(1.0, 1.0, 1.0),
         },
-        simParams: { velocityDissipation: 0.985, densityDissipation: 0.99, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.98, densityDissipation: 0.99, temperatureDissipation: 0.98 }
     },
      {
         name: 'Thermal',
@@ -495,7 +513,7 @@ const versions: Version[] = [
             uFresnelColor: new THREE.Color(1.0, 0.6, 0.3),
             uFresnelIntensity: 2.0,
             uGlowColor: new THREE.Color(1.0, 0.3, 0.0),
-            uGlowPower: 5.0,
+            uGlowPower: 3.0,
             uInkGeneration: 0.0,
             uWaveSize: 0.08,
             uWaveSteepness: 0.04,
@@ -505,7 +523,7 @@ const versions: Version[] = [
             uKillRate: 0.0,
             uVorticity: 5.0,
             uReactionForce: 0.0,
-            uBuoyancy: 1.5,
+            uBuoyancy: 1.0,
             uAmbientTemperature: 0.0,
             uSplatTemperature: 0.5,
             uBorderThickness: 0.0,
@@ -516,6 +534,8 @@ const versions: Version[] = [
             uSSR_Falloff: 1.0,
             uSSR_Samples: 0,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.0,
             uLightDepth: 0.5,
@@ -529,7 +549,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.5, 0.1, 0.5),
             uLight2Color: new THREE.Color(1.0, 0.3, 0.0),
         },
-        simParams: { velocityDissipation: 0.98, densityDissipation: 0.98, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.985, densityDissipation: 0.98, temperatureDissipation: 0.98 }
     },
     {
         name: 'Deep Ocean',
@@ -538,11 +558,11 @@ const versions: Version[] = [
             uDisplacementScale: 0.07,
             uVelocityShiftScale: 0.002,
             uDensityShiftScale: 0.002,
-            uWaterColor: new THREE.Color(0.02, 0.08, 0.25),
+            uWaterColor: new THREE.Color(0.01, 0.04, 0.15),
             uInkColor: new THREE.Color(0.5, 0.8, 1.0),
             uVolumeFactor: 1.0,
             uInkStrength: 4.0,
-            uShininess: 40.0,
+            uShininess: 30.0,
             uFresnelColor: new THREE.Color(0.2, 0.8, 1.0), uFresnelIntensity: 1.2,
             uGlowColor: new THREE.Color(0.1, 0.4, 0.6), uGlowPower: 2.5,
             uInkGeneration: 0.01,
@@ -565,20 +585,22 @@ const versions: Version[] = [
             uSSR_Falloff: 1.0,
             uSSR_Samples: 0,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 1.5,
             uLightDepth: 0.9,
             uSurfaceDetailStrength: 0.15,
             uFlowSpeed: 2.0,
-            uRippleStrength: 0.8,
+            uRippleStrength: 0.4,
             uRippleDamping: 0.988,
-            uRippleSpeed: 0.4,
+            uRippleSpeed: 0.3,
             uLight1Pos: new THREE.Vector3(0.5, 1.0, 0.9),
             uLight1Color: new THREE.Color(0.5, 0.8, 1.0),
             uLight2Pos: new THREE.Vector3(0.5, 0.0, 0.1),
             uLight2Color: new THREE.Color(0.1, 0.4, 0.6),
         },
-        simParams: { velocityDissipation: 0.99, densityDissipation: 0.99, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.995, densityDissipation: 0.99, temperatureDissipation: 0.98 }
     },
     {
         name: 'Molten Metal',
@@ -614,12 +636,14 @@ const versions: Version[] = [
             uSSR_Falloff: 2.0,
             uSSR_Samples: 15,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.0,
             uLightDepth: 0.1,
             uSurfaceDetailStrength: 0.4,
             uFlowSpeed: 0.5,
-            uRippleStrength: 0.1,
+            uRippleStrength: 0.05,
             uRippleDamping: 0.9,
             uRippleSpeed: 0.08,
             uLight1Pos: new THREE.Vector3(0.5, 0.5, 0.4),
@@ -627,7 +651,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.5, 0.5, 0.6),
             uLight2Color: new THREE.Color(1.0, 0.3, 0.0),
         },
-        simParams: { velocityDissipation: 0.9, densityDissipation: 0.98, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.95, densityDissipation: 0.97, temperatureDissipation: 0.98 }
     },
     {
         name: 'Ethereal Glow',
@@ -639,7 +663,7 @@ const versions: Version[] = [
             uWaterColor: new THREE.Color(0.1, 0.2, 0.25),
             uInkColor: new THREE.Color(0.8, 1.0, 0.9),
             uVolumeFactor: 0.3,
-            uInkStrength: 1.0,
+            uInkStrength: 0.8,
             uShininess: 30.0,
             uFresnelColor: new THREE.Color(1.0, 0.6, 0.8), uFresnelIntensity: 2.5,
             uGlowColor: new THREE.Color(0.5, 1.0, 0.8), uGlowPower: 2.0,
@@ -663,12 +687,14 @@ const versions: Version[] = [
             uSSR_Falloff: 1.0,
             uSSR_Samples: 0,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.0,
             uLightDepth: 0.5,
             uSurfaceDetailStrength: 0.0,
             uFlowSpeed: 1.0,
-            uRippleStrength: 0.2,
+            uRippleStrength: 0.1,
             uRippleDamping: 0.985,
             uRippleSpeed: 0.4,
             uLight1Pos: new THREE.Vector3(0.2, 0.8, 0.5),
@@ -676,15 +702,15 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.8, 0.2, 0.5),
             uLight2Color: new THREE.Color(1.0, 0.6, 0.8),
         },
-        simParams: { velocityDissipation: 0.99, densityDissipation: 0.995, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.993, densityDissipation: 0.996, temperatureDissipation: 0.98 }
     },
     {
         name: 'Lusion',
         uniforms: {
             uArtisticBlend: 0.1,
             uDisplacementScale: 0.09,
-            uVelocityShiftScale: 0.004,
-            uDensityShiftScale: 0.012,
+            uVelocityShiftScale: 0.002,
+            uDensityShiftScale: 0.006,
             uWaterColor: new THREE.Color(0.01, 0.0, 0.02),
             uInkColor: new THREE.Color(0.3, 0.8, 1.0),
             uVolumeFactor: 0.85,
@@ -699,7 +725,7 @@ const versions: Version[] = [
             uWaveDetail: 0.01,
             uFeedRate: 0.0,
             uKillRate: 0.0,
-            uVorticity: 15.0,
+            uVorticity: 10.0,
             uReactionForce: 0.0,
             uBuoyancy: 0.0,
             uAmbientTemperature: 0.0,
@@ -712,6 +738,8 @@ const versions: Version[] = [
             uSSR_Falloff: 1.0,
             uSSR_Samples: 0,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.2,
             uLightDepth: 0.5,
@@ -725,15 +753,15 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.9, 0.2, 0.5),
             uLight2Color: new THREE.Color(0.2, 0.5, 1.0),
         },
-        simParams: { velocityDissipation: 0.98, densityDissipation: 0.98, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.988, densityDissipation: 0.98, temperatureDissipation: 0.98 }
     },
     {
         name: 'Awwwards',
         uniforms: {
             uArtisticBlend: 0.1,
             uDisplacementScale: 0.15,
-            uVelocityShiftScale: 0.01,
-            uDensityShiftScale: 0.03,
+            uVelocityShiftScale: 0.005,
+            uDensityShiftScale: 0.015,
             uWaterColor: new THREE.Color(0.1, 0.1, 0.1),
             uInkColor: new THREE.Color(0.0, 1.0, 0.8),
             uVolumeFactor: 0.2,
@@ -750,7 +778,7 @@ const versions: Version[] = [
             uWaveDetail: 0.02,
             uFeedRate: 0.0,
             uKillRate: 0.0,
-            uVorticity: 10.0,
+            uVorticity: 5.0,
             uReactionForce: 0.0,
             uBuoyancy: 0.0,
             uAmbientTemperature: 0.0,
@@ -763,12 +791,14 @@ const versions: Version[] = [
             uSSR_Falloff: 1.0,
             uSSR_Samples: 0,
             uParticleRate: 0.0,
+            uParticleSize: 2.0,
+            uParticleAdvection: 0.2,
             uParticleColor: new THREE.Color(1.0, 1.0, 1.0),
             uCausticsIntensity: 0.0,
             uLightDepth: 0.5,
             uSurfaceDetailStrength: 0.1,
             uFlowSpeed: 1.0,
-            uRippleStrength: 0.6,
+            uRippleStrength: 0.3,
             uRippleDamping: 0.98,
             uRippleSpeed: 0.8,
             uLight1Pos: new THREE.Vector3(0.5, 0.5, 0.5),
@@ -776,7 +806,7 @@ const versions: Version[] = [
             uLight2Pos: new THREE.Vector3(0.5, 0.5, 0.5),
             uLight2Color: new THREE.Color(1.0, 0.0, 1.0),
         },
-        simParams: { velocityDissipation: 0.95, densityDissipation: 0.92, temperatureDissipation: 0.98 }
+        simParams: { waveDecay: 0.985, densityDissipation: 0.96, temperatureDissipation: 0.98 }
     },
 ];
 
@@ -1152,6 +1182,7 @@ const particleUpdateShader = `
     uniform sampler2D uParticles; // R,G = pos.x, pos.y; B = age; A = lifetime
     uniform sampler2D uVelocity;
     uniform float uDt;
+    uniform float uParticleAdvection;
 
     void main() {
         vec4 particle = texture2D(uParticles, vUv);
@@ -1165,7 +1196,7 @@ const particleUpdateShader = `
         vec2 pos = particle.xy;
         vec2 vel = texture2D(uVelocity, pos).xy;
 
-        pos += vel * uDt * 0.2; // Advect particle
+        pos += vel * uDt * uParticleAdvection; // Advect particle
         
         // Simple periodic boundary conditions
         pos = mod(pos, 1.0);
@@ -1178,6 +1209,7 @@ const particleUpdateShader = `
 
 const particleRenderVS = `
     uniform sampler2D uParticles;
+    uniform float uParticleSize;
     attribute vec2 a_uv;
     varying float v_age_ratio;
 
@@ -1189,7 +1221,7 @@ const particleRenderVS = `
         if (particle.b < particle.a) {
             vec2 pos = (particle.xy * 2.0) - 1.0;
             gl_Position = vec4(pos, 0.0, 1.0);
-            gl_PointSize = 2.0 * (1.0 - v_age_ratio);
+            gl_PointSize = uParticleSize * (1.0 - v_age_ratio);
         } else {
             // Hide dead particles
             gl_Position = vec4(-2.0, -2.0, 0.0, 1.0);
@@ -1360,8 +1392,8 @@ const rippleSplatShader = `
 
         vec2 base = texture2D(uTarget, vUv).rg;
         
-        // Pluck the surface downwards to create a trough
-        base.r -= intensity * uStrength;
+        // Pluck the surface downwards to create a trough with a more defined falloff
+        base.r -= pow(intensity, 1.5) * uStrength;
 
         gl_FragColor = vec4(base, 0.0, 1.0);
     }
@@ -1387,8 +1419,8 @@ const ripplePropagateShader = `
         float laplacian = (h_l + h_r + h_b + h_t) - 4.0 * h_curr;
         
         // Wave equation: new_h = 2*h_curr - h_prev + (speed^2 * laplacian)
-        // We square uRippleSpeed to get a more intuitive control range
-        float h_new = 2.0 * h_curr - h_prev + laplacian * (uRippleSpeed * uRippleSpeed);
+        // A stability factor of 0.4 is added to prevent numerical artifacts.
+        float h_new = 2.0 * h_curr - h_prev + laplacian * (uRippleSpeed * uRippleSpeed) * 0.4;
         
         // Apply damping to make ripples fade
         h_new *= uRippleDamping;
@@ -1474,7 +1506,8 @@ const compositingShader = `
     float ripple_h_center = texture2D(uRippleTexture, vUv).r;
     float ripple_h_x = texture2D(uRippleTexture, vUv + dUv_x).r;
     float ripple_h_y = texture2D(uRippleTexture, vUv + dUv_y).r;
-    vec2 rippleNormal = vec2(ripple_h_center - ripple_h_x, ripple_h_center - ripple_h_y) * 150.0;
+    // Reduced multiplier from 150.0 to 40.0 for softer, more realistic ripple normals
+    vec2 rippleNormal = vec2(ripple_h_center - ripple_h_x, ripple_h_center - ripple_h_y) * 40.0;
 
     // Combine all normal sources
     vec3 finalNormal = normalize(vec3(
@@ -1660,7 +1693,7 @@ const useFluidSimulation = (
     }).current;
 
     useEffect(() => {
-        sim.config.velocityDissipation = params.velocityDissipation;
+        sim.config.velocityDissipation = params.waveDecay;
         sim.config.densityDissipation = params.densityDissipation;
         sim.config.temperatureDissipation = params.temperatureDissipation;
         if (sim.materials.compositing) {
@@ -1673,7 +1706,7 @@ const useFluidSimulation = (
             const splatMaterial = sim.materials.splat as THREE.ShaderMaterial;
             const buoyancyMaterial = sim.materials.buoyancy as THREE.ShaderMaterial;
             const particleRenderMaterial = sim.materials.particleRender as THREE.ShaderMaterial;
-            const particleSplatMaterial = sim.materials.particleSplat as THREE.ShaderMaterial;
+            const particleUpdateMaterial = sim.materials.particleUpdate as THREE.ShaderMaterial;
             const flowMapMaterial = sim.materials.flowMap as THREE.ShaderMaterial;
             const ripplePropagateMaterial = sim.materials.ripplePropagate as THREE.ShaderMaterial;
 
@@ -1706,8 +1739,8 @@ const useFluidSimulation = (
                 if (particleRenderMaterial.uniforms[key]) {
                      particleRenderMaterial.uniforms[key].value = value;
                 }
-                 if (particleSplatMaterial.uniforms['uRate'] && key === 'uParticleRate') {
-                    particleSplatMaterial.uniforms['uRate'].value = value;
+                 if (particleUpdateMaterial.uniforms[key]) {
+                    particleUpdateMaterial.uniforms[key].value = value;
                 }
                 if (flowMapMaterial.uniforms[key]) {
                     flowMapMaterial.uniforms[key].value = value;
@@ -1814,8 +1847,8 @@ const useFluidSimulation = (
                 uniforms: { uFluidResult: { value: null }, uSceneTexture: { value: null }, uDensityTexture: { value: null }, uCausticsTexture: { value: null }, uArtisticBlend: { value: 0.0 }, uCausticsIntensity: { value: 0.0 } }
             }),
             particleSplat: new THREE.ShaderMaterial({ vertexShader: baseVertexShader, fragmentShader: particleSplatShader, uniforms: { uTarget: { value: null }, uCenter: { value: new THREE.Vector2() }, uRadius: { value: 0.05 }, uIntensity: { value: 0.0 } } }),
-            particleUpdate: new THREE.ShaderMaterial({ vertexShader: baseVertexShader, fragmentShader: particleUpdateShader, uniforms: { uParticles: { value: null }, uVelocity: { value: null }, uDt: { value: 0.0 } } }),
-            particleRender: new THREE.ShaderMaterial({ vertexShader: particleRenderVS, fragmentShader: particleRenderFS, uniforms: { uParticles: { value: null }, uParticleColor: { value: new THREE.Color(1,1,1) } }, transparent: true, blending: THREE.AdditiveBlending, depthTest: false }),
+            particleUpdate: new THREE.ShaderMaterial({ vertexShader: baseVertexShader, fragmentShader: particleUpdateShader, uniforms: { uParticles: { value: null }, uVelocity: { value: null }, uDt: { value: 0.0 }, uParticleAdvection: { value: 0.2 } } }),
+            particleRender: new THREE.ShaderMaterial({ vertexShader: particleRenderVS, fragmentShader: particleRenderFS, uniforms: { uParticles: { value: null }, uParticleColor: { value: new THREE.Color(1,1,1) }, uParticleSize: { value: 2.0 } }, transparent: true, blending: THREE.AdditiveBlending, depthTest: false }),
         };
         sim.scene.add(sim.mesh);
 
@@ -1927,7 +1960,9 @@ const useFluidSimulation = (
                     sim.fbo.velocity.swap();
                     
                     const speed = Math.sqrt(dx * dx + dy * dy);
-                    const intensity = Math.pow(Math.min(speed * 30.0, 1.0), 2.0) * forceMultiplier;
+                    const moveIntensity = Math.pow(Math.min(speed * 30.0, 1.0), 2.0) * forceMultiplier;
+                    const clickIntensity = (button === 0) ? 0.15 : 0.0;
+                    const intensity = moveIntensity + clickIntensity;
 
                     splatMaterial.uniforms.uTarget.value = sim.fbo.density.read.texture;
                     splatMaterial.uniforms.uColor.value.set(0, intensity * 0.5, 0);
@@ -1962,9 +1997,11 @@ const useFluidSimulation = (
                     const particleRate = paramsRef.current.uParticleRate;
                     if (particleRate > 0) {
                         const particleSplatMaterial = sim.materials.particleSplat as THREE.ShaderMaterial;
+                        const particleIntensity = (speed * particleRate) + (button === 0 ? particleRate * 0.5 : 0.0);
                         particleSplatMaterial.uniforms.uTarget.value = sim.fbo.particles.read.texture;
                         particleSplatMaterial.uniforms.uCenter.value.set(p.x, p.y);
-                        particleSplatMaterial.uniforms.uIntensity.value = speed * particleRate;
+                        particleSplatMaterial.uniforms.uRadius.value = paramsRef.current.uWaveSize;
+                        particleSplatMaterial.uniforms.uIntensity.value = particleIntensity;
                         blit(sim.fbo.particles.write, particleSplatMaterial);
                         sim.fbo.particles.swap();
                     }
@@ -2187,6 +2224,9 @@ const useFluidSimulation = (
              if ((sim.materials.particleRender as THREE.ShaderMaterial).uniforms[key]) {
                 (sim.materials.particleRender as THREE.ShaderMaterial).uniforms[key].value = value;
             }
+             if ((sim.materials.particleUpdate as THREE.ShaderMaterial).uniforms[key]) {
+                (sim.materials.particleUpdate as THREE.ShaderMaterial).uniforms[key].value = value;
+            }
          });
 
 
@@ -2265,6 +2305,12 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({ params, setParams, active
     const [isCustomizing, setIsCustomizing] = useState(false);
 
     const paramConfig = useMemo(() => ({
+        coreEngine: {
+            title: 'Core Engine',
+            controls: {
+                 waveDecay: { label: 'Wave Decay', description: "How much motion is preserved each frame. High values create long-lasting waves.", min: 0.8, max: 1, step: 0.001 },
+            }
+        },
         enginePhysics: {
             title: 'Engine Physics',
             controls: {
@@ -2322,6 +2368,8 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({ params, setParams, active
             title: 'Particles',
             controls: {
                 uParticleRate: { label: 'Particle Rate', description: "How many sparkly particles are created when you move.", min: 0, max: 2, step: 0.01 },
+                uParticleSize: { label: 'Particle Size', description: "The maximum size of the sparkly particles.", min: 0, max: 10, step: 0.1 },
+                uParticleAdvection: { label: 'Particle Flow', description: "How much particles follow the fluid's current.", min: 0, max: 1, step: 0.01 },
             }
         },
         visualAppearance: {
@@ -2338,10 +2386,9 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({ params, setParams, active
                 uGlowPower: { label: 'Glow Power', description: "How bright the glowing parts of the fluid are.", min: 0, max: 10, step: 0.1 },
             }
         },
-        dissipation: {
-            title: 'Dissipation',
+        propertyFade: {
+            title: 'Property Fade',
             controls: {
-                velocityDissipation: { label: 'Velocity Fade', description: "How quickly the fluid's motion slows down. Like water vs. honey.", min: 0.8, max: 1, step: 0.001 },
                 densityDissipation: { label: 'Density Fade', description: "How quickly the 'ink' or color fades away.", min: 0.8, max: 1, step: 0.001 },
                 temperatureDissipation: { label: 'Temperature Fade', description: "How quickly the fluid cools down to its base temperature.", min: 0.8, max: 1, step: 0.001 },
             }

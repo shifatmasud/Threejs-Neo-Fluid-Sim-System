@@ -1,0 +1,5 @@
+{
+  "name": "Interactive Fluid Simulation",
+  "description": "A visually stunning, real-time fluid simulation built with React and Three.js. Interact by moving your mouse and customize the fluid's appearance with various presets and controls.",
+  "requestFramePermissions": []
+}

@@ -20,7 +20,7 @@
   </head>
   <body class="bg-white overflow-hidden">
     <div id="root"></div>
-    <!-- Change script type to text/babel for Babel to transpile it -->
-    <script type="text/babel" data-type="module" src="./src/index.tsx"></script>
+    <!-- Configure Babel to transpile TSX and use modules, and correct the path to index.tsx -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript" src="./index.tsx"></script>
   </body>
 </html>

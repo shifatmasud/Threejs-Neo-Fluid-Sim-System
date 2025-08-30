@@ -1,5 +1,6 @@
 {
   "name": "interactive-fluid-simulation",
+  "homepage": "https://shifatmasud.github.io/Threejs-Neo-Fluid-Sim-System"
   "private": false,
   "version": "0.0.0",
   "type": "module",

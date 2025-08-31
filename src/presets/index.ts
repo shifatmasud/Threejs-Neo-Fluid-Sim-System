@@ -5,12 +5,12 @@ import { mercury } from './mercury';
 import { crystalClear } from './crystalClear';
 import { sora } from './sora';
 import { rainbowFlare } from './rainbowFlare';
-import { luminousGelPro } from './luminousGelPro';
+import { luminousGel } from './luminousGel';
 import { Version } from '../types';
 
 export const versions: Version[] = [
     rainbowFlare,
-    luminousGelPro,
+    luminousGel,
     liquidBubble,
     neoWater,
     crystalClear,

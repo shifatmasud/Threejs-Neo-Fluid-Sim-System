@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 import { Version } from '../types';
 
@@ -11,12 +12,12 @@ export const luminousGel: Version = {
         uWaterColor: new THREE.Color("#33194c"),
         uInkColor: new THREE.Color("#ccb2ff"),
         uVolumeFactor: 0.9,
-        uInkStrength: 1.0,
+        uInkStrength: 0.8,
         uShininess: 150,
         uFresnelColor: new THREE.Color("#373120"),
         uFresnelIntensity: 1.5,
         uGlowColor: new THREE.Color("#99ccff"),
-        uGlowPower: 1.0,
+        uGlowPower: 0.6,
         uInkGeneration: 0.1,
         uWaveSize: 0.117,
         uWaveSteepness: 0.01,
@@ -48,9 +49,9 @@ export const luminousGel: Version = {
         uRippleDamping: 0.9,
         uRippleSpeed: 0,
         uLight1Pos: new THREE.Vector3(0.7, 0.7, 0.4),
-        uLight1Color: new THREE.Color("#090118"),
+        uLight1Color: new THREE.Color("#000000"),
         uLight2Pos: new THREE.Vector3(0.3, 0.3, 0.6),
-        uLight2Color: new THREE.Color("#99ccff")
+        uLight2Color: new THREE.Color("#80a0c0")
     },
     simParams: {
         waveDecay: 1,

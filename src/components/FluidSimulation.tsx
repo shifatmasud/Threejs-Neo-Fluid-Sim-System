@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import GUI from 'lil-gui';
 import FluidEffect from './FluidEffect';
 import { versions } from '../constants';
-import { AllParams, Version } from '../types';
+import { AllParams, Version, Uniforms } from '../types';
 
 export interface QualitySettings {
     simResolution: number;
@@ -12,7 +12,6 @@ export interface QualitySettings {
     enableSsr: boolean;
 }
 
-// --- MAIN COMPONENT ---
 const clonePresetParams = (preset: Version): AllParams => {
     const uniforms = preset.uniforms;
     const clonedUniforms = {
@@ -23,286 +22,225 @@ const clonePresetParams = (preset: Version): AllParams => {
         uGlowColor: uniforms.uGlowColor.clone(),
         uBorderColor: uniforms.uBorderColor.clone(),
         uParticleColor: uniforms.uParticleColor.clone(),
-        uLight1Color: uniforms.uLight1Color.clone(),
-        uLight2Color: uniforms.uLight2Color.clone(),
         uLight1Pos: uniforms.uLight1Pos.clone(),
+        uLight1Color: uniforms.uLight1Color.clone(),
         uLight2Pos: uniforms.uLight2Pos.clone(),
+        uLight2Color: uniforms.uLight2Color.clone(),
     };
-    return { ...clonedUniforms, ...preset.simParams } as AllParams;
-};
-
-const paramConfig = {
-    coreEngine: {
-        title: 'Core Engine',
-        controls: {
-             waveDecay: { label: 'Wave Decay', description: "How much motion is preserved each frame. High values create long-lasting waves.", min: 0.8, max: 1, step: 0.001 },
-        }
-    },
-    enginePhysics: {
-        title: 'Engine Physics',
-        controls: {
-            uSurfaceTension: { label: 'Surface Tension', description: "How 'tight' the water surface is. High values make it bead up like mercury.", min: 0, max: 2, step: 0.01 },
-            uBuoyancy: { label: 'Buoyancy Force', description: "Makes hot fluid rise. Creates a lava lamp effect.", min: 0, max: 2, step: 0.01 },
-            uSplatTemperature: { label: 'Splat Temperature', description: "How hot or cold your touch is. Hot splats rise, cold ones sink.", min: -1.0, max: 1.0, step: 0.01 },
-            uAmbientTemperature: { label: 'Ambient Temperature', description: "The base temperature of the fluid. Affects buoyancy.", min: 0.0, max: 1.0, step: 0.01 },
-            uVorticity: { label: 'Vorticity', description: "How much the fluid swirls and creates whirlpools.", min: 0, max: 50, step: 0.1 },
-            uReactionForce: { label: 'Reaction Force', description: "Creates patterns like animal spots (works with Feed/Kill rates).", min: 0, max: 2, step: 0.01 },
-            uFeedRate: { label: 'Feed Rate', description: "Part of a chemical reaction that creates complex patterns.", min: 0.0, max: 0.1, step: 0.001 },
-            uKillRate: { label: 'Kill Rate', description: "The other part of the chemical reaction. Balances the Feed Rate.", min: 0.0, max: 0.1, step: 0.001 },
-        }
-    },
-    waveShape: {
-        title: 'Wave Shape & Contrast',
-        controls: {
-            uChiselStrength: { label: 'Chisel Strength', description: "Adds shadows and depth, making the fluid look carved.", min: 0, max: 5, step: 0.01 },
-            uWaveSize: { label: 'Wave Size', description: "The size of the splash you make when you touch the fluid.", min: 0.01, max: 0.3, step: 0.001 },
-            uWaveSteepness: { label: 'Wave Steepness', description: "How tall and sharp the main fluid waves are.", min: 0.01, max: 0.2, step: 0.001 },
-            uWaveComplexity: { label: 'Wave Complexity', description: "Adds bigger, slower swirls to the fluid's movement.", min: 0, max: 0.5, step: 0.001 },
-            uWaveDetail: { label: 'Wave Detail', description: "Adds tiny, fast wiggles to the main waves.", min: 0, max: 0.1, step: 0.001 },
-            uBorderThickness: { label: 'Border Thickness', description: "Creates a dark edge around the fluid, like an outline.", min: 0, max: 0.5, step: 0.001 },
-        }
-    },
-    rippleSystem: {
-        title: 'Ripple System',
-        controls: {
-            uRippleStrength: { label: 'Ripple Strength', description: "How big and powerful the ripples are when you touch the surface.", min: 0, max: 2, step: 0.01 },
-            uRippleSpeed: { label: 'Ripple Speed', description: "How fast the ripples travel across the water.", min: 0, max: 1.5, step: 0.01 },
-            uRippleDamping: { label: 'Ripple Damping', description: "How quickly the ripples fade away. Low values mean long-lasting waves.", min: 0.9, max: 1.0, step: 0.001 },
-        }
-    },
-    surfaceDetail: {
-        title: 'Surface Detail',
-        controls: {
-            uSurfaceDetailStrength: { label: 'Detail Strength', description: "The intensity of the tiny, shimmering details on the surface.", min: 0, max: 1, step: 0.01 },
-            uFlowSpeed: { label: 'Flow Speed', description: "How much the tiny details follow the flow of the main fluid.", min: 0, max: 2, step: 0.01 },
-        }
-    },
-    reflections: {
-        title: 'Screen-Space Reflections',
-        controls: {
-            uSSR_Strength: { label: 'Reflection Strength', description: "How strong the mirror-like reflections are on the fluid's surface.", min: 0, max: 3, step: 0.01 },
-            uSSR_Falloff: { label: 'Reflection Falloff', description: "How quickly reflections fade as they get further away.", min: 0, max: 5, step: 0.1 },
-            uSSR_Samples: { label: 'Reflection Samples', description: "Quality of reflections. Higher is better but costs more performance.", min: 0, max: 30, step: 1 },
-        }
-    },
-    caustics: {
-        title: 'Caustics',
-        controls: {
-            uCausticsIntensity: { label: 'Caustics Intensity', description: "The brightness of the shimmering light patterns on the background.", min: 0, max: 5, step: 0.1 },
-        }
-    },
-    particles: {
-        title: 'Particles',
-        controls: {
-            uParticleRate: { label: 'Particle Rate', description: "How many sparkly particles are created when you move.", min: 0, max: 2, step: 0.01 },
-            uParticleSize: { label: 'Particle Size', description: "The maximum size of the sparkly particles.", min: 0, max: 10, step: 0.1 },
-            uParticleAdvection: { label: 'Particle Flow', description: "How much particles follow the fluid's current.", min: 0, max: 1, step: 0.01 },
-        }
-    },
-    visualAppearance: {
-        title: 'Material',
-        controls: {
-            uArtisticBlend: { label: 'Artistic Blend', description: "Blends between a realistic look and a more stylized, inky one.", min: 0, max: 1, step: 0.01 },
-            uDisplacementScale: { label: 'Refraction', description: "How much the fluid distorts the background, like a magnifying glass.", min: 0, max: 0.2, step: 0.001 },
-            uVelocityShiftScale: { label: 'Velocity RGB Shift', description: "Creates a cool 'chromatic aberration' effect based on speed.", min: 0, max: 0.05, step: 0.0001 },
-            uDensityShiftScale: { label: 'Density RGB Shift', description: "Creates a similar RGB split effect based on how thick the fluid is.", min: 0, max: 0.1, step: 0.0001 },
-            uVolumeFactor: { label: 'Volume', description: "How thick and opaque the fluid is. Higher values absorb more light.", min: 0, max: 1, step: 0.01 },
-            uInkStrength: { label: 'Ink Strength', description: "The overall intensity of all visual effects.", min: 0, max: 5, step: 0.05 },
-            uShininess: { label: 'Shininess', description: "How sharp and focused light reflections are. Like polished vs. matte.", min: 1, max: 1024, step: 1 },
-            uFresnelIntensity: { label: 'Fresnel Intensity', description: "How reflective the edges of the fluid are.", min: 0, max: 5, step: 0.1 },
-            uGlowPower: { label: 'Glow Power', description: "How bright the glowing parts of the fluid are.", min: 0, max: 10, step: 0.1 },
-        }
-    },
-    propertyFade: {
-        title: 'Property Fade',
-        controls: {
-            densityDissipation: { label: 'Density Fade', description: "How quickly the 'ink' or color fades away.", min: 0.8, max: 1, step: 0.001 },
-            temperatureDissipation: { label: 'Temperature Fade', description: "How quickly the fluid cools down to its base temperature.", min: 0.8, max: 1, step: 0.001 },
-        }
-    },
+    return { ...clonedUniforms, ...preset.simParams };
 };
 
 const FluidSimulation: React.FC = () => {
-    const getInitialQuality = (): QualitySettings => {
-        if (typeof window !== 'undefined' && window.innerWidth < 768) {
-            return {
-                simResolution: 128,
-                particleResolution: 128,
-                enableSsr: false,
-            };
-        }
-        return {
-            simResolution: 256,
-            particleResolution: 256,
-            enableSsr: true,
-        };
-    };
+    const [params, setParams] = useState<AllParams>(() => clonePresetParams(versions[0]));
+    const [quality, setQuality] = useState<QualitySettings>({ simResolution: 256, particleResolution: 512, enableSsr: true });
+    const [backgroundColor, setBackgroundColor] = useState('#080810');
+    const [textColor, setTextColor] = useState('#ffffff');
+    const guiRef = useRef<GUI | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [activePreset, setActivePreset] = useState<string>(versions[0].name);
-    const [quality, setQuality] = useState<QualitySettings>(getInitialQuality);
-    const [backgroundColor, setBackgroundColor] = useState('#000000');
-    const [textColor, setTextColor] = useState('#FFFFFF');
-
-    const [params, setParams] = useState<AllParams>(() => {
-        const preset = versions.find(v => v.name === activePreset) || versions[0];
-        return clonePresetParams(preset);
-    });
-
-    const handleSelectPreset = (index: number) => {
-        const preset: Version = versions[index];
-        setParams(clonePresetParams(preset));
-        setActivePreset(preset.name);
-        const presetHasSsr = preset.uniforms.uSSR_Strength > 0 && preset.uniforms.uSSR_Samples > 0;
-        setQuality(q => ({ ...q, enableSsr: presetHasSsr }));
-    };
-
-    const handleSetParams = (key: keyof AllParams, value: any) => {
-        setParams(prev => ({ ...prev, [key]: value }));
-        setActivePreset('Custom');
-    };
-
-    const handleSetQuality = <K extends keyof QualitySettings>(key: K, value: QualitySettings[K]) => {
-        setQuality(prev => ({ ...prev, [key]: value }));
-        setActivePreset('Custom');
+    const updateParams = (newParams: Partial<AllParams>) => {
+        setParams(prev => ({ ...prev, ...newParams }));
     };
     
-    const handleExportPreset = () => {
-        const simParamKeys = ['waveDecay', 'densityDissipation', 'temperatureDissipation'];
-        const preset = { name: "Custom Preset", uniforms: {} as Record<string, any>, simParams: {} as Record<string, any> };
-        for (const [key, value] of Object.entries(params)) {
-            if (simParamKeys.includes(key)) {
-                preset.simParams[key] = value;
-            } else {
-                if (value instanceof THREE.Color) preset.uniforms[key] = '#' + value.getHexString('srgb');
-                else if (value instanceof THREE.Vector3) preset.uniforms[key] = { x: value.x, y: value.y, z: value.z };
-                else preset.uniforms[key] = value;
-            }
-        }
-        const jsonString = JSON.stringify(preset, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'custom-fluid-preset.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+    const updateQuality = (newQuality: Partial<QualitySettings>) => {
+        setQuality(prev => ({ ...prev, ...newQuality }));
     };
 
-    const guiRef = useRef<GUI>();
-    const controllersRef = useRef<any>({});
+    const handleExportPreset = () => {
+        const presetToExport: { name: string, uniforms: Record<string, any>, simParams: Record<string, any> } = {
+            name: "Custom Preset",
+            uniforms: {},
+            simParams: {}
+        };
+
+        // FIX: The 'params' object is flat and doesn't have 'simParams' or 'uniforms' properties.
+        // Use a reference preset to determine which keys belong to simParams and which to uniforms.
+        const referencePreset = versions[0];
+
+        for (const key in params) {
+            const value = (params as any)[key];
+            if (key in referencePreset.simParams) {
+                presetToExport.simParams[key] = value;
+            } else if (key in referencePreset.uniforms) {
+                 if (value instanceof THREE.Color) {
+                    // FIX: Export hex color with a '#' prefix to be valid for import.
+                    presetToExport.uniforms[key] = `#${value.getHexString()}`;
+                } else if (value instanceof THREE.Vector3) {
+                    presetToExport.uniforms[key] = { x: value.x, y: value.y, z: value.z };
+                } else {
+                    presetToExport.uniforms[key] = value;
+                }
+            }
+        }
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(presetToExport, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "custom_preset.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImportPreset = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const text = e.target?.result as string;
+                const importedPreset = JSON.parse(text);
+
+                const newParams: Partial<AllParams> = {};
+                const uniformsFromFile = importedPreset.uniforms || {};
+                const simParamsFromFile = importedPreset.simParams || {};
+
+                for (const key in params) {
+                     if (key in uniformsFromFile) {
+                        const value = uniformsFromFile[key];
+                        if ((params as any)[key] instanceof THREE.Color) {
+                            (newParams as any)[key] = new THREE.Color(value);
+                        } else if ((params as any)[key] instanceof THREE.Vector3) {
+                            (newParams as any)[key] = new THREE.Vector3(value.x, value.y, value.z);
+                        } else {
+                            (newParams as any)[key] = value;
+                        }
+                    } else if (key in simParamsFromFile) {
+                         (newParams as any)[key] = simParamsFromFile[key];
+                    }
+                }
+                setParams(prev => ({...prev, ...newParams}));
+            } catch (error) {
+                console.error("Error parsing preset file:", error);
+                alert("Failed to import preset. Please check the file format.");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // Reset file input
+    };
+
 
     useEffect(() => {
         const gui = new GUI();
-        gui.title("Fluid Controls");
         guiRef.current = gui;
-        const ctrls = controllersRef.current;
 
-        const presetProxy = { preset: activePreset };
-        ctrls.preset = gui.add(presetProxy, 'preset', versions.map(v => v.name))
-            .name('Presets')
-            .onChange(name => {
-                const index = versions.findIndex(v => v.name === name);
-                if (index > -1) handleSelectPreset(index);
-            });
+        const presetOptions = versions.reduce((acc, v) => ({ ...acc, [v.name]: v.name }), {});
+        const presetHolder = { preset: versions[0].name };
 
-        const customizeFolder = gui.addFolder('Customize');
-        customizeFolder.close();
-
-        const backgroundFolder = customizeFolder.addFolder('Background');
-        ctrls.backgroundColor = backgroundFolder.addColor({ color: backgroundColor }, 'color').name('Background Color').onChange(setBackgroundColor);
-        ctrls.textColor = backgroundFolder.addColor({ color: textColor }, 'color').name('Text Color').onChange(setTextColor);
-
-        const qualityFolder = customizeFolder.addFolder('Performance & Quality');
-        ctrls.simResolution = qualityFolder.add(quality, 'simResolution', { 'Low (128)': 128, 'Medium (256)': 256, 'High (512)': 512 }).name('Simulation Resolution').onChange(v => handleSetQuality('simResolution', Number(v)));
-        ctrls.particleResolution = qualityFolder.add(quality, 'particleResolution', { 'Off': 0, 'Low (128x128)': 128, 'Medium (256x256)': 256, 'High (512x512)': 512 }).name('Particle Count').onChange(v => handleSetQuality('particleResolution', Number(v)));
-        ctrls.enableSsr = qualityFolder.add(quality, 'enableSsr').name('Screen-Space Reflections').onChange(v => handleSetQuality('enableSsr', v));
-        
-        Object.values(paramConfig).forEach(group => {
-            const folder = customizeFolder.addFolder(group.title);
-            Object.entries(group.controls).forEach(([key, config]) => {
-                const paramKey = key as keyof AllParams;
-                ctrls[paramKey] = folder.add(params, paramKey, config.min, config.max, config.step)
-                    .name(config.label)
-                    .onChange(value => handleSetParams(paramKey, value));
-            });
-            if(group.title === 'Particles') {
-                 ctrls.uParticleColor = folder.addColor({color: '#' + params.uParticleColor.getHexString('srgb')}, 'color').name('Particle Color').onChange(v => handleSetParams('uParticleColor', new THREE.Color(v)));
+        gui.add(presetHolder, 'preset', presetOptions).name('Preset').onChange((value: string) => {
+            const selectedPreset = versions.find(v => v.name === value);
+            if (selectedPreset) {
+                setParams(clonePresetParams(selectedPreset));
             }
         });
+
+        const qualityFolder = gui.addFolder('Quality');
+        qualityFolder.add(quality, 'simResolution', { '128': 128, '256': 256, '512': 512, '1024': 1024 }).name('Sim Resolution').onChange(v => updateQuality({ simResolution: Number(v) }));
+        qualityFolder.add(quality, 'particleResolution', { '0': 0, '256': 256, '512': 512, '1024': 1024 }).name('Particle Resolution').onChange(v => updateQuality({ particleResolution: Number(v) }));
+        qualityFolder.add(quality, 'enableSsr').name('SSR (Reflections)').onChange(v => updateQuality({ enableSsr: v }));
         
-        const lightingFolder = customizeFolder.addFolder('Lighting');
-        const light1Folder = lightingFolder.addFolder('Light 1');
-        ctrls.uLight1PosX = light1Folder.add(params.uLight1Pos, 'x', -1, 2, 0.01).onChange(v => handleSetParams('uLight1Pos', params.uLight1Pos.clone().setX(v)));
-        ctrls.uLight1PosY = light1Folder.add(params.uLight1Pos, 'y', -1, 2, 0.01).onChange(v => handleSetParams('uLight1Pos', params.uLight1Pos.clone().setY(v)));
-        ctrls.uLight1PosZ = light1Folder.add(params.uLight1Pos, 'z', 0.1, 2, 0.01).onChange(v => handleSetParams('uLight1Pos', params.uLight1Pos.clone().setZ(v)));
-        ctrls.uLight1Color = light1Folder.addColor({color: '#' + params.uLight1Color.getHexString('srgb')}, 'color').name('Color').onChange(v => handleSetParams('uLight1Color', new THREE.Color(v)));
+        const appearanceFolder = gui.addFolder('Appearance');
+        appearanceFolder.addColor({ color: `#${params.uWaterColor.getHexString()}` }, 'color').name('Water Color').onChange(v => updateParams({ uWaterColor: new THREE.Color(v) }));
+        appearanceFolder.addColor({ color: `#${params.uInkColor.getHexString()}` }, 'color').name('Ink Color').onChange(v => updateParams({ uInkColor: new THREE.Color(v) }));
+        appearanceFolder.add(params, 'uVolumeFactor', 0, 1).name('Volume Factor').onChange(v => updateParams({ uVolumeFactor: v }));
+        appearanceFolder.add(params, 'uInkStrength', 0, 5).name('Ink Strength').onChange(v => updateParams({ uInkStrength: v }));
+        appearanceFolder.addColor({ color: `${backgroundColor}`}, 'color').name('Background Color').onChange(setBackgroundColor);
+        appearanceFolder.addColor({ color: `${textColor}`}, 'color').name('Text Color').onChange(setTextColor);
 
-        const light2Folder = lightingFolder.addFolder('Light 2');
-        ctrls.uLight2PosX = light2Folder.add(params.uLight2Pos, 'x', -1, 2, 0.01).onChange(v => handleSetParams('uLight2Pos', params.uLight2Pos.clone().setX(v)));
-        ctrls.uLight2PosY = light2Folder.add(params.uLight2Pos, 'y', -1, 2, 0.01).onChange(v => handleSetParams('uLight2Pos', params.uLight2Pos.clone().setY(v)));
-        ctrls.uLight2PosZ = light2Folder.add(params.uLight2Pos, 'z', 0.1, 2, 0.01).onChange(v => handleSetParams('uLight2Pos', params.uLight2Pos.clone().setZ(v)));
-        ctrls.uLight2Color = light2Folder.addColor({color: '#' + params.uLight2Color.getHexString('srgb')}, 'color').name('Color').onChange(v => handleSetParams('uLight2Color', new THREE.Color(v)));
+        const lightingFolder = gui.addFolder('Lighting');
+        lightingFolder.add(params, 'uShininess', 1, 1024).name('Shininess').onChange(v => updateParams({ uShininess: v }));
+        lightingFolder.addColor({ color: `#${params.uFresnelColor.getHexString()}` }, 'color').name('Fresnel Color').onChange(v => updateParams({ uFresnelColor: new THREE.Color(v) }));
+        lightingFolder.add(params, 'uFresnelIntensity', 0, 10).name('Fresnel Intensity').onChange(v => updateParams({ uFresnelIntensity: v }));
+        lightingFolder.addColor({ color: `#${params.uGlowColor.getHexString()}` }, 'color').name('Glow Color').onChange(v => updateParams({ uGlowColor: new THREE.Color(v) }));
+        lightingFolder.add(params, 'uGlowPower', 0, 10).name('Glow Power').onChange(v => updateParams({ uGlowPower: v }));
+        lightingFolder.add(params, 'uCausticsIntensity', 0, 5).name('Caustics').onChange(v => updateParams({ uCausticsIntensity: v }));
 
-        const colorsFolder = customizeFolder.addFolder('Colors');
-        ctrls.uWaterColor = colorsFolder.addColor({color: '#' + params.uWaterColor.getHexString('srgb')}, 'color').name('Water Color').onChange(v => handleSetParams('uWaterColor', new THREE.Color(v)));
-        ctrls.uInkColor = colorsFolder.addColor({color: '#' + params.uInkColor.getHexString('srgb')}, 'color').name('Ink Color').onChange(v => handleSetParams('uInkColor', new THREE.Color(v)));
-        ctrls.uBorderColor = colorsFolder.addColor({color: '#' + params.uBorderColor.getHexString('srgb')}, 'color').name('Border Color').onChange(v => handleSetParams('uBorderColor', new THREE.Color(v)));
-        ctrls.uFresnelColor = colorsFolder.addColor({color: '#' + params.uFresnelColor.getHexString('srgb')}, 'color').name('Fresnel Color').onChange(v => handleSetParams('uFresnelColor', new THREE.Color(v)));
-        ctrls.uGlowColor = colorsFolder.addColor({color: '#' + params.uGlowColor.getHexString('srgb')}, 'color').name('Glow Color').onChange(v => handleSetParams('uGlowColor', new THREE.Color(v)));
+        const waveFolder = gui.addFolder('Waves & Ripples');
+        waveFolder.add(params, 'uWaveSize', 0.01, 0.5).name('Splat Size').onChange(v => updateParams({ uWaveSize: v }));
+        waveFolder.add(params, 'uDisplacementScale', 0, 0.5).name('Displacement').onChange(v => updateParams({ uDisplacementScale: v }));
+        waveFolder.add(params, 'uWaveSteepness', 0, 0.5).name('Steepness').onChange(v => updateParams({ uWaveSteepness: v }));
+        waveFolder.add(params, 'uWaveComplexity', 0, 0.2).name('Complexity').onChange(v => updateParams({ uWaveComplexity: v }));
+        waveFolder.add(params, 'uWaveDetail', 0, 0.2).name('Detail').onChange(v => updateParams({ uWaveDetail: v }));
+        waveFolder.add(params, 'uRippleStrength', 0, 2).name('Ripple Strength').onChange(v => updateParams({ uRippleStrength: v }));
+        waveFolder.add(params, 'uRippleDamping', 0.8, 1.0).name('Ripple Damping').onChange(v => updateParams({ uRippleDamping: v }));
+        waveFolder.add(params, 'uRippleSpeed', 0, 2).name('Ripple Speed').onChange(v => updateParams({ uRippleSpeed: v }));
 
-        gui.add({ export: handleExportPreset }, 'export').name('Export Custom Preset');
+        const fluidDynamicsFolder = gui.addFolder('Fluid Dynamics');
+        fluidDynamicsFolder.add(params, 'densityDissipation', 0.8, 1.0).name('Ink Dissipation').onChange(v => updateParams({ densityDissipation: v }));
+        fluidDynamicsFolder.add(params, 'waveDecay', 0.8, 1.0).name('Wave Decay').onChange(v => updateParams({ waveDecay: v }));
+        fluidDynamicsFolder.add(params, 'uVorticity', 0, 10).name('Vorticity').onChange(v => updateParams({ uVorticity: v }));
+        fluidDynamicsFolder.add(params, 'uSurfaceTension', 0, 2).name('Surface Tension').onChange(v => updateParams({ uSurfaceTension: v }));
+
+        const presetManagementFolder = gui.addFolder('Preset Management');
+        presetManagementFolder.add({ export: handleExportPreset }, 'export').name('Export Preset');
+        presetManagementFolder.add({ import: handleImportClick }, 'import').name('Import Preset');
+        
+        const controllers: any[] = [];
+        gui.controllers.forEach(c => controllers.push(c));
+        Object.values(gui.folders).forEach(f => f.controllers.forEach(c => controllers.push(c)));
 
         return () => {
             gui.destroy();
-            controllersRef.current = {};
+            guiRef.current = null;
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
+    
     useEffect(() => {
-        const ctrls = controllersRef.current;
-        if (!guiRef.current || !Object.keys(ctrls).length) return;
-
-        if (ctrls.preset.getValue() !== activePreset) ctrls.preset.setValue(activePreset);
-        if (ctrls.backgroundColor.getValue() !== backgroundColor) ctrls.backgroundColor.setValue(backgroundColor);
-        if (ctrls.textColor.getValue() !== textColor) ctrls.textColor.setValue(textColor);
-
-        Object.keys(quality).forEach(k => {
-            const key = k as keyof QualitySettings;
-            if (ctrls[key] && ctrls[key].getValue() !== quality[key]) ctrls[key].setValue(quality[key]);
-        });
-        
-        Object.keys(params).forEach(k => {
-            const key = k as keyof AllParams;
-            const value = params[key];
-            if (value instanceof THREE.Color) {
-                const hex = '#' + value.getHexString('srgb');
-                if (ctrls[key] && ctrls[key].getValue() !== hex) ctrls[key].setValue(hex);
-            } else if (value instanceof THREE.Vector3) {
-                if (ctrls[key+'X'] && ctrls[key+'X'].getValue() !== value.x) ctrls[key+'X'].setValue(value.x);
-                if (ctrls[key+'Y'] && ctrls[key+'Y'].getValue() !== value.y) ctrls[key+'Y'].setValue(value.y);
-                if (ctrls[key+'Z'] && ctrls[key+'Z'].getValue() !== value.z) ctrls[key+'Z'].setValue(value.z);
-            } else {
-                 if (ctrls[key] && ctrls[key].getValue() !== value) ctrls[key].setValue(value);
+        const gui = guiRef.current;
+        if (!gui) return;
+        // Update GUI controllers with new param values
+        const updateController = (controller: any) => {
+            if (Object.prototype.hasOwnProperty.call(params, controller.property) || Object.prototype.hasOwnProperty.call(quality, controller.property)) {
+                 const value = (params as any)[controller.property] ?? (quality as any)[controller.property];
+                 if (value instanceof THREE.Color) {
+                    controller.object.color = `#${value.getHexString()}`;
+                    controller.updateDisplay();
+                 } else {
+                    controller.setValue(value);
+                 }
+            } else if (controller.property === 'preset') {
+                // FIX: The 'params' object is flat and does not have a 'uniforms' property.
+                // To find the current preset, we must construct a 'uniforms' object from the flat 'params' state
+                // and compare it to the presets' uniforms.
+                const preset = versions.find(v => {
+                    const currentUniforms: Partial<Uniforms> = {};
+                    for (const key in v.uniforms) {
+                        (currentUniforms as any)[key] = (params as any)[key];
+                    }
+                    return JSON.stringify(v.uniforms) === JSON.stringify(currentUniforms);
+                });
+                controller.setValue(preset ? preset.name : "Custom");
             }
-        });
+        }
+        gui.controllers.forEach(updateController);
+        Object.values(gui.folders).forEach(f => f.controllers.forEach(updateController));
+    }, [params, quality]);
 
-    }, [params, quality, activePreset, backgroundColor, textColor]);
 
-    const simulationKey = `${quality.simResolution}-${quality.particleResolution}`;
+    const memoizedParams = useMemo(() => params, [params]);
 
     return (
-        <main style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-            <FluidEffect
-                key={simulationKey}
-                params={params}
+        <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+             <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept=".json"
+                onChange={handleImportPreset}
+            />
+            <FluidEffect 
+                params={memoizedParams} 
                 quality={quality}
                 backgroundColor={backgroundColor}
                 textColor={textColor}
             />
-        </main>
+        </div>
     );
 };
 

@@ -145,7 +145,7 @@ const luminousGel: Version = {
         uVolumeFactor: 0.9,
         uInkStrength: 1.8,
         uShininess: 150,
-        uFresnelColor: new THREE.Color("#fff2cc"),
+        uFresnelColor: new THREE.Color("#373120"),
         uFresnelIntensity: 1.5,
         uGlowColor: new THREE.Color("#99ccff"),
         uGlowPower: 2.2,
@@ -159,8 +159,8 @@ const luminousGel: Version = {
         uVorticity: 0,
         uReactionForce: 0,
         uBuoyancy: 0,
-        uAmbientTemperature: 0,
-        uSplatTemperature: 0,
+        uAmbientTemperature: 0.03,
+        uSplatTemperature: -0.22,
         uBorderThickness: 0,
         uBorderColor: new THREE.Color("#000000"),
         uSurfaceTension: 1,
@@ -180,12 +180,12 @@ const luminousGel: Version = {
         uRippleDamping: 0.9,
         uRippleSpeed: 0,
         uLight1Pos: new THREE.Vector3(0.7, 0.7, 0.4),
-        uLight1Color: new THREE.Color("#ccb2ff"),
+        uLight1Color: new THREE.Color("#090118"),
         uLight2Pos: new THREE.Vector3(0.3, 0.3, 0.6),
         uLight2Color: new THREE.Color("#99ccff")
     },
     simParams: {
-        waveDecay: 0.98,
+        waveDecay: 1,
         densityDissipation: 0.98,
         temperatureDissipation: 0.98
     }

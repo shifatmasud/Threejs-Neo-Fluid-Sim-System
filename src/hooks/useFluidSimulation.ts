@@ -1,8 +1,11 @@
+
+
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { AllParams } from '../types';
 import { PRESSURE_ITERATIONS, REACTION_DIFFUSION_ITERATIONS } from '../constants';
-import * as shaders from '../shaders';
+// FIX: The shaders were moved to a directory. Changed import to point to the index file in the shaders directory.
+import * as shaders from '../shaders/index';
 import { QualitySettings } from '../components/FluidSimulation';
 
 type PointerInfo = {

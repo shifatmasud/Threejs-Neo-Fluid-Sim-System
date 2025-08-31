@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import NewComponent from './src/components/NewComponent';
+import FluidSimulation from './src/components/FluidSimulation';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -11,6 +11,6 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <NewComponent />
+    <FluidSimulation />
   </React.StrictMode>
 );

@@ -1,5 +1,7 @@
 
+
 import { pristineWater } from './pristineWater';
+import { liquidBubble } from './azureDepths';
 import { neoWater } from './neoWater';
 import { mercury } from './mercury';
 import { crystalClear } from './crystalClear';
@@ -17,6 +19,7 @@ import { awwwards } from './awwwards';
 import { Version } from '../types';
 
 export const versions: Version[] = [
+    liquidBubble,
     pristineWater,
     neoWater,
     mercury,

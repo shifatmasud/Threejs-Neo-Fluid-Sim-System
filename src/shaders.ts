@@ -534,7 +534,7 @@ export const surfaceDetailShader = `
             gl_FragColor = vec4(0.5, 0.5, 1.0, 1.0); // Neutral normal
             return;
         }
-        vec2 flow = texture2D(uFlowMapTexture, vUv).xy * 0.1;
+        vec2 flow = texture2D(uFlowMapTexture, vUv).xy * 0.5;
         float flow_mag = length(flow);
         
         // Calculate main wave normal to influence detail direction
@@ -555,8 +555,8 @@ export const surfaceDetailShader = `
         float nx = fbm((sample_uv + vec2(dUv.x, 0.0)) * noise_mod, flow_mag);
         float ny = fbm((sample_uv + vec2(0.0, dUv.y)) * noise_mod, flow_mag);
         
-        // Use a constant Z value to control the "height" of the details, making them more subtle
-        vec3 normal = normalize(vec3((noise_val - nx), (noise_val - ny), 0.1));
+        // Use a larger Z value to control the "height" of the details, making them less extreme and preventing artifacts.
+        vec3 normal = normalize(vec3((noise_val - nx), (noise_val - ny), 0.5));
         
         // Modulate normal strength by density to make edges smoother
         float strength = smoothstep(0.0, 0.1, density);
@@ -772,12 +772,11 @@ export const compositingShader = `
     vec3 lightDir2 = normalize(uLight2Pos - surfacePos);
     vec3 halfDir2 = normalize(lightDir2 + viewDir);
 
-    // Physically-based Fresnel using Schlick's approximation
-    const float IOR = 1.33; // Index of Refraction for water
-    const float R0 = pow((1.0 - IOR) / (1.0 + IOR), 2.0);
+    // Enhanced Fresnel for a more artistic and stable effect
     float VdotN = clamp(dot(viewDir, finalNormal), 0.0, 1.0);
-    float schlick = R0 + (1.0 - R0) * pow(1.0 - VdotN, 5.0);
-    float fresnel = schlick * uFresnelIntensity;
+    // This combines a soft base fresnel with a sharper, intensity-driven edge tint.
+    // It's more stable against noisy normals and prevents extreme brightness values.
+    float fresnel = pow(1.0 - VdotN, 2.5) + (uFresnelIntensity * 0.3) * pow(1.0 - VdotN, 6.0);
     
     float shininess = min(uShininess, 1024.0);
     float spec1 = pow(max(0.0, dot(finalNormal, halfDir1)), shininess);

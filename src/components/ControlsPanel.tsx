@@ -122,7 +122,7 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({ params, setParams, active
             title: 'Surface Detail',
             controls: {
                 uSurfaceDetailStrength: { label: 'Detail Strength', description: "The intensity of the tiny, shimmering details on the surface.", min: 0, max: 1, step: 0.01 },
-                uFlowSpeed: { label: 'Flow Speed', description: "How much the tiny details follow the flow of the main fluid.", min: 0, max: 10, step: 0.1 },
+                uFlowSpeed: { label: 'Flow Speed', description: "How much the tiny details follow the flow of the main fluid.", min: 0, max: 2, step: 0.01 },
             }
         },
         reflections: {

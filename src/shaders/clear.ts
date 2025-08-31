@@ -1,6 +1,8 @@
 
 export const clearShader = `
-    varying vec2 vUv;
+    precision mediump float;
+    in vec2 vUv;
+
     uniform sampler2D uTexture;
     uniform float uValue;
     uniform vec3 uClearColor;
@@ -8,9 +10,9 @@ export const clearShader = `
 
     void main () {
         if (uUseClearColor) {
-            gl_FragColor = vec4(uClearColor, 1.0);
+            pc_fragColor = vec4(uClearColor, 1.0);
         } else {
-            gl_FragColor = uValue * texture2D(uTexture, vUv);
+            pc_fragColor = uValue * texture(uTexture, vUv);
         }
     }
 `;

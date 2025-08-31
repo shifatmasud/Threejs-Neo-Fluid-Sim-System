@@ -1,7 +1,9 @@
 
 export const particleRenderFS = `
+    precision mediump float;
+
     uniform vec3 uParticleColor;
-    varying float v_age_ratio;
+    in float v_age_ratio;
 
     void main() {
         if (v_age_ratio > 1.0) discard;
@@ -11,6 +13,6 @@ export const particleRenderFS = `
         // With Additive Blending, we just care about the RGB value.
         // We multiply the color by alpha to make it fade out.
         // The final alpha value is set to 1.0 as it's not used by the blend function.
-        gl_FragColor = vec4(uParticleColor * alpha, 1.0);
+        pc_fragColor = vec4(uParticleColor * alpha, 1.0);
     }
 `;

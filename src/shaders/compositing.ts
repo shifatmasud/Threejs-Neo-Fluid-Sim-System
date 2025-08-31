@@ -1,6 +1,8 @@
 
 export const compositingShader = `
-  varying vec2 vUv;
+  precision mediump float;
+  in vec2 vUv;
+
   uniform sampler2D uSceneTexture;
   uniform sampler2D uVelocityTexture;
   uniform sampler2D uDensityTexture;
@@ -45,11 +47,11 @@ export const compositingShader = `
   }
 
   void main() {
-    vec2 velocity = texture2D(uVelocityTexture, vUv).xy;
-    float mainDensity = texture2D(uDensityTexture, vUv).g;
+    vec2 velocity = texture(uVelocityTexture, vUv).xy;
+    float mainDensity = texture(uDensityTexture, vUv).g;
     
     if (mainDensity < 0.001) {
-      gl_FragColor = texture2D(uSceneTexture, vUv);
+      pc_fragColor = texture(uSceneTexture, vUv);
       return;
     }
     
@@ -58,8 +60,8 @@ export const compositingShader = `
     // --- Start: Normals & Refraction ---
     vec2 dUv_x = vec2(uTexelSize.x * 2.0, 0.0);
     vec2 dUv_y = vec2(0.0, uTexelSize.y * 2.0);
-    float h_x = texture2D(uDensityTexture, vUv + dUv_x).g - mainDensity;
-    float h_y = texture2D(uDensityTexture, vUv + dUv_y).g - mainDensity;
+    float h_x = texture(uDensityTexture, vUv + dUv_x).g - mainDensity;
+    float h_y = texture(uDensityTexture, vUv + dUv_y).g - mainDensity;
 
     h_x += velocity.x * uWaveComplexity;
     h_y += velocity.y * uWaveComplexity;
@@ -70,12 +72,12 @@ export const compositingShader = `
     
     vec3 normalG = vec3(h_x, h_y, uWaveSteepness);
 
-    vec2 detailNormal = (texture2D(uDetailNormalTexture, vUv).xy - 0.5) * 2.0;
+    vec2 detailNormal = (texture(uDetailNormalTexture, vUv).xy - 0.5) * 2.0;
 
     // Calculate ripple normal from heightfield gradient
-    float ripple_h_center = texture2D(uRippleTexture, vUv).r;
-    float ripple_h_x = texture2D(uRippleTexture, vUv + dUv_x).r;
-    float ripple_h_y = texture2D(uRippleTexture, vUv + dUv_y).r;
+    float ripple_h_center = texture(uRippleTexture, vUv).r;
+    float ripple_h_x = texture(uRippleTexture, vUv + dUv_x).r;
+    float ripple_h_y = texture(uRippleTexture, vUv + dUv_y).r;
     // Increase multiplier for more pronounced ripple normals, making them highly visible.
     vec2 rippleNormal = vec2(ripple_h_center - ripple_h_x, ripple_h_center - ripple_h_y) * 450.0;
 
@@ -95,9 +97,9 @@ export const compositingShader = `
 
     float poweredRgbShift = (length(velocity) * uVelocityShiftScale + mainDensity * uDensityShiftScale) * inkPower;
     vec2 bgShift = vec2(poweredRgbShift, 0.0);
-    float r_bg = texture2D(uSceneTexture, refractedUv - bgShift).r;
-    float g_bg = texture2D(uSceneTexture, refractedUv).g;
-    float b_bg = texture2D(uSceneTexture, refractedUv + bgShift).b;
+    float r_bg = texture(uSceneTexture, refractedUv - bgShift).r;
+    float g_bg = texture(uSceneTexture, refractedUv).g;
+    float b_bg = texture(uSceneTexture, refractedUv + bgShift).b;
     vec3 refractedBg = vec3(r_bg, g_bg, b_bg);
     // --- End: Normals & Refraction ---
 
@@ -137,10 +139,10 @@ export const compositingShader = `
             if (reflect_uv.x < 0.0 || reflect_uv.x > 1.0 || reflect_uv.y < 0.0 || reflect_uv.y > 1.0) break;
             
             float ray_height = mainDensity + reflect_dir.z * reflect_dist * 5.0;
-            float surface_height = texture2D(uDensityTexture, reflect_uv).g;
+            float surface_height = texture(uDensityTexture, reflect_uv).g;
 
             if (surface_height > ray_height) {
-                reflectionColor = texture2D(uReflectionTexture, reflect_uv).rgb;
+                reflectionColor = texture(uReflectionTexture, reflect_uv).rgb;
                 hit = true;
                 break;
             }
@@ -152,9 +154,9 @@ export const compositingShader = `
     }
     vec3 reflectionComponent = reflectionColor * uSSR_Strength * fresnel;
 
-    vec3 density_center = texture2D(uDensityTexture, vUv).rgb;
-    vec3 density_shifted_R = texture2D(uDensityTexture, vUv - internalShift).rgb;
-    vec3 density_shifted_B = texture2D(uDensityTexture, vUv + internalShift).rgb;
+    vec3 density_center = texture(uDensityTexture, vUv).rgb;
+    vec3 density_shifted_R = texture(uDensityTexture, vUv - internalShift).rgb;
+    vec3 density_shifted_B = texture(uDensityTexture, vUv + internalShift).rgb;
     
     float densityR = density_shifted_R.g;
     float densityG = density_center.g;
@@ -162,7 +164,7 @@ export const compositingShader = `
     
     float glowPower = min(uGlowPower, 10.0);
 
-    float temp = texture2D(uTemperatureTexture, vUv).r;
+    float temp = texture(uTemperatureTexture, vUv).r;
     float heat = clamp((temp - uAmbientTemperature) / max(0.01, uAmbientTemperature + 1.0), 0.0, 1.0);
     vec3 heatGlowColor = mix(uGlowColor, vec3(1.0, 0.2, 0.0), heat * heat);
 
@@ -186,7 +188,7 @@ export const compositingShader = `
       float radius = uTexelSize.y * 5.0;
       for (float i = 0.0; i < samples; i++) {
         vec2 offset = vec2(cos(i * angleStep), sin(i * angleStep)) * radius;
-        totalDensity += texture2D(uDensityTexture, vUv + offset).g;
+        totalDensity += texture(uDensityTexture, vUv + offset).g;
       }
       float avgDensity = totalDensity / samples;
       ao = clamp((avgDensity - mainDensity) * uChiselStrength, 0.0, 1.0);
@@ -205,6 +207,6 @@ export const compositingShader = `
         finalColor = mix(finalColor, uBorderColor, edgeFactor * inkPower);
     }
 
-    gl_FragColor = vec4(finalColor, 1.0);
+    pc_fragColor = vec4(finalColor, 1.0);
   }
 `;

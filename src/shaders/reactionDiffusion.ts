@@ -1,6 +1,8 @@
 
 export const reactionDiffusionShader = `
-    varying vec2 vUv;
+    precision mediump float;
+    in vec2 vUv;
+
     uniform sampler2D uChemicals;
     uniform vec2 uTexelSize;
     uniform float uFeedRate;
@@ -12,27 +14,27 @@ export const reactionDiffusionShader = `
 
     void main() {
         if (uFeedRate < 0.001 && uKillRate < 0.001) {
-            gl_FragColor = texture2D(uChemicals, vUv);
+            pc_fragColor = texture(uChemicals, vUv);
             return;
         }
 
-        vec2 chemical = texture2D(uChemicals, vUv).rg;
+        vec2 chemical = texture(uChemicals, vUv).rg;
         float u = chemical.r;
         float v = chemical.g;
 
         float lap_u = (
-            texture2D(uChemicals, vUv + vec2(0.0, uTexelSize.y)).r +
-            texture2D(uChemicals, vUv - vec2(0.0, uTexelSize.y)).r +
-            texture2D(uChemicals, vUv + vec2(uTexelSize.x, 0.0)).r +
-            texture2D(uChemicals, vUv - vec2(uTexelSize.x, 0.0)).r -
+            texture(uChemicals, vUv + vec2(0.0, uTexelSize.y)).r +
+            texture(uChemicals, vUv - vec2(0.0, uTexelSize.y)).r +
+            texture(uChemicals, vUv + vec2(uTexelSize.x, 0.0)).r +
+            texture(uChemicals, vUv - vec2(uTexelSize.x, 0.0)).r -
             4.0 * u
         );
 
         float lap_v = (
-            texture2D(uChemicals, vUv + vec2(0.0, uTexelSize.y)).g +
-            texture2D(uChemicals, vUv - vec2(0.0, uTexelSize.y)).g +
-            texture2D(uChemicals, vUv + vec2(uTexelSize.x, 0.0)).g +
-            texture2D(uChemicals, vUv - vec2(uTexelSize.x, 0.0)).g -
+            texture(uChemicals, vUv + vec2(0.0, uTexelSize.y)).g +
+            texture(uChemicals, vUv - vec2(0.0, uTexelSize.y)).g +
+            texture(uChemicals, vUv + vec2(uTexelSize.x, 0.0)).g +
+            texture(uChemicals, vUv - vec2(uTexelSize.x, 0.0)).g -
             4.0 * v
         );
 
@@ -43,7 +45,7 @@ export const reactionDiffusionShader = `
         float new_u = u + du_dt * uDt;
         float new_v = v + dv_dt * uDt;
 
-        float old_b = texture2D(uChemicals, vUv).b;
-        gl_FragColor = vec4(clamp(new_u, 0.0, 1.0), clamp(new_v, 0.0, 1.0), old_b, 1.0);
+        float old_b = texture(uChemicals, vUv).b;
+        pc_fragColor = vec4(clamp(new_u, 0.0, 1.0), clamp(new_v, 0.0, 1.0), old_b, 1.0);
     }
 `;

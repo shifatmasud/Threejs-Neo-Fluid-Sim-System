@@ -1,6 +1,8 @@
 
 export const surfaceDetailShader = `
-    varying vec2 vUv;
+    precision mediump float;
+    in vec2 vUv;
+
     uniform sampler2D uDensityTexture;
     uniform sampler2D uFlowMapTexture;
     uniform vec2 uTexelSize;
@@ -52,19 +54,19 @@ export const surfaceDetailShader = `
 
 
     void main() {
-        float density = texture2D(uDensityTexture, vUv).g;
+        float density = texture(uDensityTexture, vUv).g;
         if (density < 0.01) {
-            gl_FragColor = vec4(0.5, 0.5, 1.0, 1.0); // Neutral normal
+            pc_fragColor = vec4(0.5, 0.5, 1.0, 1.0); // Neutral normal
             return;
         }
-        vec2 flow = texture2D(uFlowMapTexture, vUv).xy * 0.5;
+        vec2 flow = texture(uFlowMapTexture, vUv).xy * 0.5;
         float flow_mag = length(flow);
         
         // Calculate main wave normal to influence detail direction
-        float h_l = texture2D(uDensityTexture, vUv - vec2(uTexelSize.x, 0.0)).g;
-        float h_r = texture2D(uDensityTexture, vUv + vec2(uTexelSize.x, 0.0)).g;
-        float h_b = texture2D(uDensityTexture, vUv - vec2(0.0, uTexelSize.y)).g;
-        float h_t = texture2D(uDensityTexture, vUv + vec2(0.0, uTexelSize.y)).g;
+        float h_l = texture(uDensityTexture, vUv - vec2(uTexelSize.x, 0.0)).g;
+        float h_r = texture(uDensityTexture, vUv + vec2(uTexelSize.x, 0.0)).g;
+        float h_b = texture(uDensityTexture, vUv - vec2(0.0, uTexelSize.y)).g;
+        float h_t = texture(uDensityTexture, vUv + vec2(0.0, uTexelSize.y)).g;
         vec2 main_normal = vec2(h_l - h_r, h_b - h_t);
 
         // Animate ripples along the flow and perpendicular to main wave normal
@@ -84,6 +86,6 @@ export const surfaceDetailShader = `
         // Modulate normal strength by density to make edges smoother
         float strength = smoothstep(0.0, 0.1, density);
         
-        gl_FragColor = vec4(mix(vec2(0.5), normal.xy * 0.5 + 0.5, strength), 1.0, 1.0);
+        pc_fragColor = vec4(mix(vec2(0.5), normal.xy * 0.5 + 0.5, strength), 1.0, 1.0);
     }
 `;

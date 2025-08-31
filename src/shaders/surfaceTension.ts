@@ -1,6 +1,8 @@
 
 export const surfaceTensionShader = `
-    varying vec2 vUv;
+    precision mediump float;
+    in vec2 vUv;
+
     uniform sampler2D uVelocity;
     uniform sampler2D uDensity;
     uniform float uSurfaceTension;
@@ -8,22 +10,22 @@ export const surfaceTensionShader = `
     uniform vec2 uTexelSize;
 
     void main() {
-        vec2 velocity = texture2D(uVelocity, vUv).xy;
+        vec2 velocity = texture(uVelocity, vUv).xy;
         if (uSurfaceTension < 0.001) {
-            gl_FragColor = vec4(velocity, 0.0, 1.0);
+            pc_fragColor = vec4(velocity, 0.0, 1.0);
             return;
         }
         
-        float density = texture2D(uDensity, vUv).g;
+        float density = texture(uDensity, vUv).g;
         if (density < 0.01) {
-            gl_FragColor = vec4(velocity, 0.0, 1.0);
+            pc_fragColor = vec4(velocity, 0.0, 1.0);
             return;
         }
 
-        float L = texture2D(uDensity, vUv - vec2(uTexelSize.x, 0.0)).g;
-        float R = texture2D(uDensity, vUv + vec2(uTexelSize.x, 0.0)).g;
-        float B = texture2D(uDensity, vUv - vec2(0.0, uTexelSize.y)).g;
-        float T = texture2D(uDensity, vUv + vec2(0.0, uTexelSize.y)).g;
+        float L = texture(uDensity, vUv - vec2(uTexelSize.x, 0.0)).g;
+        float R = texture(uDensity, vUv + vec2(uTexelSize.x, 0.0)).g;
+        float B = texture(uDensity, vUv - vec2(0.0, uTexelSize.y)).g;
+        float T = texture(uDensity, vUv + vec2(0.0, uTexelSize.y)).g;
         
         vec2 grad = 0.5 * vec2(R - L, T - B);
         
@@ -36,6 +38,6 @@ export const surfaceTensionShader = `
         
         velocity += force * uDt;
         
-        gl_FragColor = vec4(velocity, 0.0, 1.0);
+        pc_fragColor = vec4(velocity, 0.0, 1.0);
     }
 `;

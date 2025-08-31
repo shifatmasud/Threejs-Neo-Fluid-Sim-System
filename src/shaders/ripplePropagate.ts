@@ -1,20 +1,22 @@
 
 export const ripplePropagateShader = `
-    varying vec2 vUv;
+    precision mediump float;
+    in vec2 vUv;
+
     uniform sampler2D uRippleTexture; // .r = current height, .g = previous height
     uniform vec2 uTexelSize;
     uniform float uRippleSpeed;
     uniform float uRippleDamping;
 
     void main() {
-        vec2 prevState = texture2D(uRippleTexture, vUv).rg;
+        vec2 prevState = texture(uRippleTexture, vUv).rg;
         float h_prev = prevState.g;
         float h_curr = prevState.r;
 
-        float h_l = texture2D(uRippleTexture, vUv - vec2(uTexelSize.x, 0.0)).r;
-        float h_r = texture2D(uRippleTexture, vUv + vec2(uTexelSize.x, 0.0)).r;
-        float h_b = texture2D(uRippleTexture, vUv - vec2(0.0, uTexelSize.y)).r;
-        float h_t = texture2D(uRippleTexture, vUv + vec2(0.0, uTexelSize.y)).r;
+        float h_l = texture(uRippleTexture, vUv - vec2(uTexelSize.x, 0.0)).r;
+        float h_r = texture(uRippleTexture, vUv + vec2(uTexelSize.x, 0.0)).r;
+        float h_b = texture(uRippleTexture, vUv - vec2(0.0, uTexelSize.y)).r;
+        float h_t = texture(uRippleTexture, vUv + vec2(0.0, uTexelSize.y)).r;
 
         float laplacian = (h_l + h_r + h_b + h_t) - 4.0 * h_curr;
         
@@ -25,6 +27,6 @@ export const ripplePropagateShader = `
         // Apply damping to make ripples fade
         h_new *= uRippleDamping;
 
-        gl_FragColor = vec4(h_new, h_curr, 0.0, 1.0); // Store new height in .r, current height in .g
+        pc_fragColor = vec4(h_new, h_curr, 0.0, 1.0); // Store new height in .r, current height in .g
     }
 `;

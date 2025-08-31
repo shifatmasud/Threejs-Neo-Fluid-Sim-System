@@ -1,6 +1,8 @@
 
 export const rippleSplatShader = `
-    varying vec2 vUv;
+    precision mediump float;
+    in vec2 vUv;
+
     uniform sampler2D uTarget;
     uniform float uAspectRatio;
     uniform vec2 uCenter;
@@ -59,8 +61,8 @@ export const rippleSplatShader = `
         }
 
 
-        vec2 base = texture2D(uTarget, vUv).rg;
+        vec2 base = texture(uTarget, vUv).rg;
         base.r += intensity;
-        gl_FragColor = vec4(base, 0.0, 1.0);
+        pc_fragColor = vec4(base, 0.0, 1.0);
     }
 `;

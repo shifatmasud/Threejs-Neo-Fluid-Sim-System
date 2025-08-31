@@ -2,11 +2,11 @@
 export const particleRenderVS = `
     uniform sampler2D uParticles;
     uniform float uParticleSize;
-    attribute vec2 a_uv;
-    varying float v_age_ratio;
+    in vec2 a_uv;
+    out float v_age_ratio;
 
     void main() {
-        vec4 particle = texture2D(uParticles, a_uv);
+        vec4 particle = texture(uParticles, a_uv);
         v_age_ratio = particle.b / particle.a;
 
         // Only draw alive particles

@@ -132,6 +132,7 @@ export const useFluidSimulation = (
             const { width, height } = sim.renderer.getSize(new THREE.Vector2());
             const newTextCanvas = createTextCanvas(width, height, backgroundColor, textColor);
             const newSceneTexture = new THREE.CanvasTexture(newTextCanvas);
+            newSceneTexture.colorSpace = THREE.SRGBColorSpace;
             const sceneMaterial = sim.materials.scene as THREE.MeshBasicMaterial;
             sceneMaterial.map?.dispose(); // Dispose of the old texture
             sceneMaterial.map = newSceneTexture;
@@ -147,12 +148,15 @@ export const useFluidSimulation = (
                 minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
                 type: THREE.HalfFloatType, format: format,
             });
+            fbo.texture.colorSpace = THREE.LinearSRGBColorSpace;
             const fbo2 = fbo.clone();
+            fbo2.texture.colorSpace = THREE.LinearSRGBColorSpace;
             return { read: fbo, write: fbo2, swap: function() { const temp = this.read; this.read = this.write; this.write = temp; } };
         };
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
         mountRef.current.appendChild(renderer.domElement);
         sim.renderer = renderer;
 
@@ -171,17 +175,24 @@ export const useFluidSimulation = (
             sim.fbo.particles = createFBO(quality.particleResolution, quality.particleResolution);
         }
         sim.fbo.divergence = new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, type: THREE.HalfFloatType, format: THREE.RedFormat });
+        sim.fbo.divergence.texture.colorSpace = THREE.LinearSRGBColorSpace;
         sim.fbo.curl = new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, type: THREE.HalfFloatType, format: THREE.RedFormat });
+        sim.fbo.curl.texture.colorSpace = THREE.LinearSRGBColorSpace;
         sim.fbo.caustics = new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RedFormat });
+        sim.fbo.caustics.texture.colorSpace = THREE.LinearSRGBColorSpace;
         sim.fbo.detailNormal = new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RGBAFormat });
+        sim.fbo.detailNormal.texture.colorSpace = THREE.LinearSRGBColorSpace;
         sim.fbo.scene = new THREE.WebGLRenderTarget(width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RGBAFormat });
+        sim.fbo.scene.texture.colorSpace = THREE.LinearSRGBColorSpace;
         sim.fbo.composited = new THREE.WebGLRenderTarget(width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RGBAFormat });
+        sim.fbo.composited.texture.colorSpace = THREE.LinearSRGBColorSpace;
         sim.fbo.renderedFrame = createFBO(width, height);
 
 
         const simTexelSize = new THREE.Vector2(1 / simWidth, 1 / simHeight);
         const textCanvas = createTextCanvas(width, height, backgroundColor, textColor);
         const sceneTexture = new THREE.CanvasTexture(textCanvas);
+        sceneTexture.colorSpace = THREE.SRGBColorSpace;
         
         sim.materials = {
             clear: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.clearShader, uniforms: { uTexture: { value: null }, uValue: { value: 0.97 }, uClearColor: { value: new THREE.Vector3() }, uUseClearColor: { value: false } } }),
@@ -591,6 +602,7 @@ export const useFluidSimulation = (
             sim.fbo.renderedFrame.write.setSize(clientWidth, clientHeight);
             const newTextCanvas = createTextCanvas(clientWidth, clientHeight, backgroundColor, textColor);
             const newSceneTexture = new THREE.CanvasTexture(newTextCanvas);
+            newSceneTexture.colorSpace = THREE.SRGBColorSpace;
             const sceneMaterial = sim.materials.scene as THREE.MeshBasicMaterial;
             sceneMaterial.map?.dispose();
             sceneMaterial.map = newSceneTexture;

@@ -173,7 +173,6 @@ const FluidSimulation: React.FC = () => {
             if (simParamKeys.includes(key)) {
                 preset.simParams[key] = value;
             } else {
-                // FIX: Provide 'srgb' as the color space argument to getHexString.
                 if (value instanceof THREE.Color) preset.uniforms[key] = '#' + value.getHexString('srgb');
                 else if (value instanceof THREE.Vector3) preset.uniforms[key] = { x: value.x, y: value.y, z: value.z };
                 else preset.uniforms[key] = value;
@@ -229,7 +228,6 @@ const FluidSimulation: React.FC = () => {
                     .onChange(value => handleSetParams(paramKey, value));
             });
             if(group.title === 'Particles') {
-                 // FIX: Provide 'srgb' as the color space argument to getHexString.
                  ctrls.uParticleColor = folder.addColor({color: '#' + params.uParticleColor.getHexString('srgb')}, 'color').name('Particle Color').onChange(v => handleSetParams('uParticleColor', new THREE.Color(v)));
             }
         });
@@ -239,26 +237,19 @@ const FluidSimulation: React.FC = () => {
         ctrls.uLight1PosX = light1Folder.add(params.uLight1Pos, 'x', -1, 2, 0.01).onChange(v => handleSetParams('uLight1Pos', params.uLight1Pos.clone().setX(v)));
         ctrls.uLight1PosY = light1Folder.add(params.uLight1Pos, 'y', -1, 2, 0.01).onChange(v => handleSetParams('uLight1Pos', params.uLight1Pos.clone().setY(v)));
         ctrls.uLight1PosZ = light1Folder.add(params.uLight1Pos, 'z', 0.1, 2, 0.01).onChange(v => handleSetParams('uLight1Pos', params.uLight1Pos.clone().setZ(v)));
-        // FIX: Provide 'srgb' as the color space argument to getHexString.
         ctrls.uLight1Color = light1Folder.addColor({color: '#' + params.uLight1Color.getHexString('srgb')}, 'color').name('Color').onChange(v => handleSetParams('uLight1Color', new THREE.Color(v)));
 
         const light2Folder = lightingFolder.addFolder('Light 2');
         ctrls.uLight2PosX = light2Folder.add(params.uLight2Pos, 'x', -1, 2, 0.01).onChange(v => handleSetParams('uLight2Pos', params.uLight2Pos.clone().setX(v)));
         ctrls.uLight2PosY = light2Folder.add(params.uLight2Pos, 'y', -1, 2, 0.01).onChange(v => handleSetParams('uLight2Pos', params.uLight2Pos.clone().setY(v)));
         ctrls.uLight2PosZ = light2Folder.add(params.uLight2Pos, 'z', 0.1, 2, 0.01).onChange(v => handleSetParams('uLight2Pos', params.uLight2Pos.clone().setZ(v)));
-        // FIX: Provide 'srgb' as the color space argument to getHexString.
         ctrls.uLight2Color = light2Folder.addColor({color: '#' + params.uLight2Color.getHexString('srgb')}, 'color').name('Color').onChange(v => handleSetParams('uLight2Color', new THREE.Color(v)));
 
         const colorsFolder = customizeFolder.addFolder('Colors');
-        // FIX: Provide 'srgb' as the color space argument to getHexString.
         ctrls.uWaterColor = colorsFolder.addColor({color: '#' + params.uWaterColor.getHexString('srgb')}, 'color').name('Water Color').onChange(v => handleSetParams('uWaterColor', new THREE.Color(v)));
-        // FIX: Provide 'srgb' as the color space argument to getHexString.
         ctrls.uInkColor = colorsFolder.addColor({color: '#' + params.uInkColor.getHexString('srgb')}, 'color').name('Ink Color').onChange(v => handleSetParams('uInkColor', new THREE.Color(v)));
-        // FIX: Provide 'srgb' as the color space argument to getHexString.
         ctrls.uBorderColor = colorsFolder.addColor({color: '#' + params.uBorderColor.getHexString('srgb')}, 'color').name('Border Color').onChange(v => handleSetParams('uBorderColor', new THREE.Color(v)));
-        // FIX: Provide 'srgb' as the color space argument to getHexString.
         ctrls.uFresnelColor = colorsFolder.addColor({color: '#' + params.uFresnelColor.getHexString('srgb')}, 'color').name('Fresnel Color').onChange(v => handleSetParams('uFresnelColor', new THREE.Color(v)));
-        // FIX: Provide 'srgb' as the color space argument to getHexString.
         ctrls.uGlowColor = colorsFolder.addColor({color: '#' + params.uGlowColor.getHexString('srgb')}, 'color').name('Glow Color').onChange(v => handleSetParams('uGlowColor', new THREE.Color(v)));
 
         gui.add({ export: handleExportPreset }, 'export').name('Export Custom Preset');
@@ -287,7 +278,6 @@ const FluidSimulation: React.FC = () => {
             const key = k as keyof AllParams;
             const value = params[key];
             if (value instanceof THREE.Color) {
-                // FIX: Provide 'srgb' as the color space argument to getHexString.
                 const hex = '#' + value.getHexString('srgb');
                 if (ctrls[key] && ctrls[key].getValue() !== hex) ctrls[key].setValue(hex);
             } else if (value instanceof THREE.Vector3) {

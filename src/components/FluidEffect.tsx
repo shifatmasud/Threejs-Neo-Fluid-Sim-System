@@ -14,7 +14,7 @@ const FluidEffect: React.FC<FluidEffectProps> = ({ params, quality, backgroundCo
     const mountRef = useRef<HTMLDivElement>(null);
     useFluidSimulation(mountRef, params, quality, backgroundColor, textColor);
 
-    return <div ref={mountRef} className="absolute top-0 left-0 w-full h-full" aria-hidden="true" />;
+    return <div ref={mountRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} aria-hidden="true" />;
 };
 
 export default FluidEffect;

@@ -4,21 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Interactive Fluid Simulation</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #000;
+      }
+      #root {
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
     <script type="importmap">
 {
   "imports": {
     "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
     "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm"
   }
 }
 </script>
     <!-- Add Babel for in-browser JSX/TSX transpilation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
-  <body class="bg-white overflow-hidden">
+  <body>
     <div id="root"></div>
     <!-- Configure Babel to transpile TSX and use modules, and correct the path to index.tsx -->
     <script type="text/babel" data-type="module" data-presets="react,typescript" src="./index.tsx"></script>

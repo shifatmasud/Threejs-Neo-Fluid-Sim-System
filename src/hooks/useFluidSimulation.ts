@@ -1,5 +1,3 @@
-
-
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { AllParams } from '../types';
@@ -15,6 +13,11 @@ type PointerInfo = {
     dx: number;
     dy: number;
     button: number;
+};
+
+// Helper to check if a value is a hex color string
+const isColor = (key: string, value: any): value is string => {
+    return typeof value === 'string' && key.toLowerCase().includes('color');
 };
 
 export const useFluidSimulation = (
@@ -48,61 +51,36 @@ export const useFluidSimulation = (
         sim.config.velocityDissipation = params.waveDecay;
         sim.config.densityDissipation = params.densityDissipation;
         sim.config.temperatureDissipation = params.temperatureDissipation;
-        if (sim.materials.compositing) {
-            const compositingMaterial = sim.materials.compositing as THREE.ShaderMaterial;
-            const finalPassMaterial = sim.materials.finalPass as THREE.ShaderMaterial;
-            const reactionDiffusionMaterial = sim.materials.reactionDiffusion as THREE.ShaderMaterial;
-            const reactionForceMaterial = sim.materials.reactionForce as THREE.ShaderMaterial;
-            const vorticityMaterial = sim.materials.vorticity as THREE.ShaderMaterial;
-            const surfaceTensionMaterial = sim.materials.surfaceTension as THREE.ShaderMaterial;
-            const splatMaterial = sim.materials.splat as THREE.ShaderMaterial;
-            const buoyancyMaterial = sim.materials.buoyancy as THREE.ShaderMaterial;
-            const particleRenderMaterial = sim.materials.particleRender as THREE.ShaderMaterial;
-            const particleUpdateMaterial = sim.materials.particleUpdate as THREE.ShaderMaterial;
-            const flowMapMaterial = sim.materials.flowMap as THREE.ShaderMaterial;
-            const ripplePropagateMaterial = sim.materials.ripplePropagate as THREE.ShaderMaterial;
 
-            Object.keys(params).forEach(key => {
-                const value = (params as any)[key];
-                if (compositingMaterial.uniforms[key]) {
-                    if (key === 'uSSR_Strength') {
-                        compositingMaterial.uniforms[key].value = quality.enableSsr ? value : 0;
-                    } else {
-                        compositingMaterial.uniforms[key].value = value;
+        // This effect is now the single place where UI-state strings are converted
+        // into THREE.Color objects for the shaders.
+        if (sim.materials.compositing) {
+             const allMaterials = [
+                sim.materials.compositing, sim.materials.finalPass, sim.materials.reactionDiffusion,
+                sim.materials.reactionForce, sim.materials.vorticity, sim.materials.surfaceTension,
+                sim.materials.splat, sim.materials.buoyancy, sim.materials.particleRender,
+                sim.materials.particleUpdate, sim.materials.flowMap, sim.materials.ripplePropagate
+            ];
+
+            Object.entries(params).forEach(([key, value]) => {
+                allMaterials.forEach(mat => {
+                    if (mat && (mat as THREE.ShaderMaterial).uniforms && (mat as THREE.ShaderMaterial).uniforms[key]) {
+                        const uniform = (mat as THREE.ShaderMaterial).uniforms[key];
+                        if (isColor(key, value)) {
+                            // If it's a color uniform, ensure it has a .set method and update it.
+                             if (uniform.value instanceof THREE.Color) {
+                                uniform.value.set(value);
+                            }
+                        } else if (key === 'uSSR_Strength') {
+                             uniform.value = quality.enableSsr ? value : 0;
+                        } else {
+                            uniform.value = value;
+                        }
                     }
-                }
-                if (finalPassMaterial.uniforms[key]) {
-                    finalPassMaterial.uniforms[key].value = value;
-                }
-                if (reactionDiffusionMaterial.uniforms[key]) {
-                    reactionDiffusionMaterial.uniforms[key].value = value;
-                }
-                 if (reactionForceMaterial.uniforms[key]) {
-                    reactionForceMaterial.uniforms[key].value = value;
-                }
-                 if (vorticityMaterial.uniforms[key]) {
-                    vorticityMaterial.uniforms[key].value = value;
-                }
-                 if (surfaceTensionMaterial.uniforms[key]) {
-                    surfaceTensionMaterial.uniforms[key].value = value;
-                }
-                if (buoyancyMaterial.uniforms[key]) {
-                    buoyancyMaterial.uniforms[key].value = value;
-                }
-                if (splatMaterial.uniforms['uRadius'] && key === 'uWaveSize') {
-                    splatMaterial.uniforms['uRadius'].value = value;
-                }
-                if (particleRenderMaterial && particleRenderMaterial.uniforms[key]) {
-                     particleRenderMaterial.uniforms[key].value = value;
-                }
-                 if (particleUpdateMaterial && particleUpdateMaterial.uniforms[key]) {
-                    particleUpdateMaterial.uniforms[key].value = value;
-                }
-                if (flowMapMaterial.uniforms[key]) {
-                    flowMapMaterial.uniforms[key].value = value;
-                }
-                if (ripplePropagateMaterial.uniforms[key]) {
-                    ripplePropagateMaterial.uniforms[key].value = value;
+                });
+                // Special case for splat radius
+                if (sim.materials.splat && key === 'uWaveSize') {
+                    ((sim.materials.splat as THREE.ShaderMaterial).uniforms.uRadius as any).value = value;
                 }
             });
         }
@@ -610,40 +588,30 @@ export const useFluidSimulation = (
         window.addEventListener('resize', handleResize);
         
         // Initial param setup
-        const firstParams = params;
-         Object.keys(firstParams).forEach(key => {
-            const value = (firstParams as any)[key];
-             if ((sim.materials.compositing as THREE.ShaderMaterial).uniforms[key]) {
-                 (sim.materials.compositing as THREE.ShaderMaterial).uniforms[key].value = value;
-             }
-             if ((sim.materials.finalPass as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.finalPass as THREE.ShaderMaterial).uniforms[key].value = value;
-             }
-             if ((sim.materials.reactionDiffusion as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.reactionDiffusion as THREE.ShaderMaterial).uniforms[key].value = value;
-             }
-             if ((sim.materials.reactionForce as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.reactionForce as THREE.ShaderMaterial).uniforms[key].value = value;
-             }
-             if ((sim.materials.vorticity as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.vorticity as THREE.ShaderMaterial).uniforms[key].value = value;
-             }
-             if ((sim.materials.surfaceTension as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.surfaceTension as THREE.ShaderMaterial).uniforms[key].value = value;
-             }
-             if ((sim.materials.buoyancy as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.buoyancy as THREE.ShaderMaterial).uniforms[key].value = value;
-             }
-             if((sim.materials.splat as THREE.ShaderMaterial).uniforms['uRadius'] && key === 'uWaveSize') {
-                 (sim.materials.splat as THREE.ShaderMaterial).uniforms['uRadius'].value = value;
-             }
-             if (sim.materials.particleRender && (sim.materials.particleRender as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.particleRender as THREE.ShaderMaterial).uniforms[key].value = value;
+         const allMaterials = [
+            sim.materials.compositing, sim.materials.finalPass, sim.materials.reactionDiffusion,
+            sim.materials.reactionForce, sim.materials.vorticity, sim.materials.surfaceTension,
+            sim.materials.splat, sim.materials.buoyancy, sim.materials.particleRender,
+            sim.materials.particleUpdate, sim.materials.flowMap, sim.materials.ripplePropagate
+        ];
+
+        Object.entries(params).forEach(([key, value]) => {
+            allMaterials.forEach(mat => {
+                if (mat && (mat as THREE.ShaderMaterial).uniforms && (mat as THREE.ShaderMaterial).uniforms[key]) {
+                    const uniform = (mat as THREE.ShaderMaterial).uniforms[key];
+                    if (isColor(key, value)) {
+                         if (uniform.value instanceof THREE.Color) {
+                            uniform.value.set(value);
+                        }
+                    } else {
+                        uniform.value = value;
+                    }
+                }
+            });
+            if (sim.materials.splat && key === 'uWaveSize') {
+                ((sim.materials.splat as THREE.ShaderMaterial).uniforms.uRadius as any).value = value;
             }
-             if (sim.materials.particleUpdate && (sim.materials.particleUpdate as THREE.ShaderMaterial).uniforms[key]) {
-                (sim.materials.particleUpdate as THREE.ShaderMaterial).uniforms[key].value = value;
-            }
-         });
+        });
 
 
         return () => {

@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 // --- TYPES ---
@@ -7,14 +6,14 @@ export interface Uniforms {
     uDisplacementScale: number;
     uVelocityShiftScale: number;
     uDensityShiftScale: number;
-    uWaterColor: THREE.Color;
-    uInkColor: THREE.Color;
+    uWaterColor: string;
+    uInkColor: string;
     uVolumeFactor: number;
     uInkStrength: number;
     uShininess: number;
-    uFresnelColor: THREE.Color;
+    uFresnelColor: string;
     uFresnelIntensity: number;
-    uGlowColor: THREE.Color;
+    uGlowColor: string;
     uGlowPower: number;
     uInkGeneration: number;
     uWaveSize: number;
@@ -29,7 +28,7 @@ export interface Uniforms {
     uAmbientTemperature: number;
     uSplatTemperature: number;
     uBorderThickness: number;
-    uBorderColor: THREE.Color;
+    uBorderColor: string;
     uSurfaceTension: number;
     uChiselStrength: number;
     uSSR_Strength: number;
@@ -38,7 +37,7 @@ export interface Uniforms {
     uParticleRate: number;
     uParticleSize: number;
     uParticleAdvection: number;
-    uParticleColor: THREE.Color;
+    uParticleColor: string;
     uCausticsIntensity: number;
     uLightDepth: number;
     uSurfaceDetailStrength: number;
@@ -47,9 +46,9 @@ export interface Uniforms {
     uRippleDamping: number;
     uRippleSpeed: number;
     uLight1Pos: THREE.Vector3;
-    uLight1Color: THREE.Color;
+    uLight1Color: string;
     uLight2Pos: THREE.Vector3;
-    uLight2Color: THREE.Color;
+    uLight2Color: string;
 }
 
 export interface SimParams {

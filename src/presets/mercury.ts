@@ -9,13 +9,13 @@ export const mercury: Version = {
         uVelocityShiftScale: 0,
         uDensityShiftScale: 0.0171,
         uWaterColor: "#4d4d4d",
-        uInkColor: "#1b3b64",
-        uVolumeFactor: 0.55,
-        uInkStrength: 0.8,
+        uInkColor: "#999999",
+        uVolumeFactor: 0.97,
+        uInkStrength: 2.65,
         uShininess: 992,
-        uFresnelColor: "#000000",
-        uFresnelIntensity: 1.6,
-        uGlowColor: "#f2f2f2",
+        uFresnelColor: "#e6e6e6",
+        uFresnelIntensity: 3.6,
+        uGlowColor: "#141414",
         uGlowPower: 4.8,
         uInkGeneration: 0.05,
         uWaveSize: 0.08,
@@ -54,7 +54,7 @@ export const mercury: Version = {
     },
     simParams: {
         waveDecay: 0.968,
-        densityDissipation: 0.934,
+        densityDissipation: 0.956,
         temperatureDissipation: 0.98
     }
 };

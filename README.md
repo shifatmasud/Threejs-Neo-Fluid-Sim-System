@@ -7,9 +7,7 @@ The project exists in two forms: a standalone web application and a reusable com
 ---
 
 ## Demos
-
-*   **Web Application**: [View in AI Studio](https://ai.studio/apps/drive/1ZETrrcQbFYPXQ5fYL_jh5VMjbLvmkmb6)
-*   **Framer Component Demo**: [View on Framer Sites](https://conclusive-form-676715.framer.app/home)
+(https://conclusive-form-676715.framer.app/home)
 
 ---
 

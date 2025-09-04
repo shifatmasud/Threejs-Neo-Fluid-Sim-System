@@ -1,18 +1,16 @@
-//engine.tsx
-//engine.tsx
-import React, { useEffect, useRef } from "react"
-import * as THREE from "three"
-import type { AllParams, QualitySettings } from "./main.tsx"
+import React, { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import type { AllParams, QualitySettings } from './main.tsx';
 
 // --- CONSTANTS ---
-const PRESSURE_ITERATIONS = 20
-const REACTION_DIFFUSION_ITERATIONS = 10
+const PRESSURE_ITERATIONS = 20;
+const REACTION_DIFFUSION_ITERATIONS = 10;
 
 // --- SHADERS ---
 // Note: Shaders from Flat.tsx were converted from GLSL 3.0 to 1.0 for compatibility with THREE.ShaderMaterial
 // (e.g., 'in' -> 'varying', 'texture' -> 'texture2D', removed 'out' and 'precision')
 export const shaders = {
-    baseVertexShader: `
+baseVertexShader: `
   varying vec2 vUv;
   void main() {
     vUv = uv;
@@ -20,7 +18,7 @@ export const shaders = {
   }
 `,
 
-    splatShader: `
+splatShader: `
   varying vec2 vUv;
   uniform sampler2D uTarget;
   uniform float uAspectRatio;
@@ -38,7 +36,7 @@ export const shaders = {
   }
 `,
 
-    advectionShader: `
+advectionShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform sampler2D uSource;
@@ -52,7 +50,7 @@ export const shaders = {
     }
 `,
 
-    divergenceShader: `
+divergenceShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform vec2 uTexelSize;
@@ -68,7 +66,7 @@ export const shaders = {
     }
 `,
 
-    clearShader: `
+clearShader: `
     varying vec2 vUv;
     uniform sampler2D uTexture;
     uniform float uValue;
@@ -84,7 +82,7 @@ export const shaders = {
     }
 `,
 
-    pressureShader: `
+pressureShader: `
     varying vec2 vUv;
     uniform sampler2D uPressure;
     uniform sampler2D uDivergence;
@@ -101,7 +99,7 @@ export const shaders = {
     }
 `,
 
-    gradientSubtractShader: `
+gradientSubtractShader: `
     varying vec2 vUv;
     uniform sampler2D uPressure;
     uniform sampler2D uVelocity;
@@ -118,7 +116,7 @@ export const shaders = {
     }
 `,
 
-    reactionDiffusionShader: `
+reactionDiffusionShader: `
     varying vec2 vUv;
     uniform sampler2D uChemicals;
     uniform vec2 uTexelSize;
@@ -167,7 +165,7 @@ export const shaders = {
     }
 `,
 
-    curlShader: `
+curlShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform vec2 uTexelSize;
@@ -183,7 +181,7 @@ export const shaders = {
     }
 `,
 
-    vorticityShader: `
+vorticityShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform sampler2D uCurl;
@@ -215,7 +213,7 @@ export const shaders = {
     }
 `,
 
-    surfaceTensionShader: `
+surfaceTensionShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform sampler2D uDensity;
@@ -253,7 +251,7 @@ export const shaders = {
     }
 `,
 
-    reactionForceShader: `
+reactionForceShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform sampler2D uChemicals;
@@ -278,7 +276,7 @@ export const shaders = {
     }
 `,
 
-    buoyancyShader: `
+buoyancyShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform sampler2D uTemperature;
@@ -299,7 +297,7 @@ export const shaders = {
     }
 `,
 
-    eraseShader: `
+eraseShader: `
     varying vec2 vUv;
     uniform sampler2D uTarget;
     uniform float uAspectRatio;
@@ -319,7 +317,7 @@ export const shaders = {
     }
 `,
 
-    radialPushShader: `
+radialPushShader: `
     varying vec2 vUv;
     uniform sampler2D uTarget;
     uniform float uAspectRatio;
@@ -345,7 +343,7 @@ export const shaders = {
     }
 `,
 
-    particleSplatShader: `
+particleSplatShader: `
     varying vec2 vUv;
     uniform sampler2D uTarget;
     uniform vec2 uCenter;
@@ -372,7 +370,7 @@ export const shaders = {
     }
 `,
 
-    particleUpdateShader: `
+particleUpdateShader: `
     varying vec2 vUv;
     uniform sampler2D uParticles;
     uniform sampler2D uVelocity;
@@ -400,7 +398,7 @@ export const shaders = {
     }
 `,
 
-    particleRenderVS: `
+particleRenderVS: `
     uniform sampler2D uParticles;
     uniform float uParticleSize;
     attribute vec2 a_uv;
@@ -421,7 +419,7 @@ export const shaders = {
     }
 `,
 
-    particleRenderFS: `
+particleRenderFS: `
     uniform vec3 uParticleColor;
     varying float v_age_ratio;
 
@@ -432,7 +430,7 @@ export const shaders = {
     }
 `,
 
-    causticsShader: `
+causticsShader: `
     varying vec2 vUv;
     uniform sampler2D uDensityTexture;
     uniform vec2 uTexelSize;
@@ -453,7 +451,7 @@ export const shaders = {
     }
 `,
 
-    flowMapShader: `
+flowMapShader: `
     varying vec2 vUv;
     uniform sampler2D uVelocity;
     uniform sampler2D uFlowMap;
@@ -468,7 +466,7 @@ export const shaders = {
     }
 `,
 
-    surfaceDetailShader: `
+surfaceDetailShader: `
     varying vec2 vUv;
     uniform sampler2D uDensityTexture;
     uniform sampler2D uFlowMapTexture;
@@ -544,7 +542,7 @@ export const shaders = {
     }
 `,
 
-    rippleSplatShader: `
+rippleSplatShader: `
     varying vec2 vUv;
     uniform sampler2D uTarget;
     uniform float uAspectRatio;
@@ -589,7 +587,7 @@ export const shaders = {
     }
 `,
 
-    ripplePropagateShader: `
+ripplePropagateShader: `
     varying vec2 vUv;
     uniform sampler2D uRippleTexture;
     uniform vec2 uTexelSize;
@@ -614,7 +612,7 @@ export const shaders = {
     }
 `,
 
-    compositingShader: `
+compositingShader: `
   varying vec2 vUv;
   uniform sampler2D uSceneTexture;
   uniform sampler2D uVelocityTexture;
@@ -782,7 +780,7 @@ export const shaders = {
   }
 `,
 
-    finalPassShader: `
+finalPassShader: `
     varying vec2 vUv;
     uniform sampler2D uFluidResult;
     uniform sampler2D uSceneTexture;
@@ -803,36 +801,35 @@ export const shaders = {
         
         gl_FragColor = vec4(blendedColor, 1.0);
     }
-`,
-}
+`
+};
 
 // --- SIMULATION HOOK ---
 type PointerInfo = {
-    id: number
-    x: number
-    y: number
-    dx: number
-    dy: number
-    button: number
-}
+    id: number;
+    x: number;
+    y: number;
+    dx: number;
+    dy: number;
+    button: number;
+    type: string;
+};
 
-const isColor = (key: string): boolean => key.toLowerCase().includes("color")
+const isColor = (key: string): boolean => key.toLowerCase().includes('color');
 
 export const useFluidSimulation = (
     mountRef: React.RefObject<HTMLDivElement>,
     params: AllParams,
     quality: QualitySettings,
-    textureCanvas: HTMLCanvasElement | null
+    textureCanvas: HTMLCanvasElement | null,
 ) => {
     // This ref holds the latest TARGET parameters from props.
-    const targetParamsRef = useRef(params)
-    useEffect(() => {
-        targetParamsRef.current = params
-    }, [params])
+    const targetParamsRef = useRef(params);
+    useEffect(() => { targetParamsRef.current = params; }, [params]);
 
     // This ref holds the LIVE, animated parameters being used by the simulation.
     // It's initialized once with the initial params and reset if the hook remounts.
-    const liveParamsRef = useRef<AllParams>(JSON.parse(JSON.stringify(params)))
+    const liveParamsRef = useRef<AllParams>(JSON.parse(JSON.stringify(params)));
 
     const sim = useRef({
         renderer: null as THREE.WebGLRenderer | null,
@@ -846,71 +843,46 @@ export const useFluidSimulation = (
         fbo: {} as Record<string, any>,
         materials: {} as Record<string, THREE.Material>,
         simHeight: 0,
-        config: {
-            waveDecay: 0,
-            densityDissipation: 0,
-            temperatureDissipation: 0,
-        },
-    }).current
+        config: { waveDecay: 0, densityDissipation: 0, temperatureDissipation: 0 },
+    }).current;
 
     useEffect(() => {
         if (sim.renderer && sim.materials.scene && textureCanvas) {
-            const sceneMaterial = sim.materials.scene as THREE.MeshBasicMaterial
-            const newSceneTexture = new THREE.CanvasTexture(textureCanvas)
-            newSceneTexture.colorSpace = THREE.SRGBColorSpace
-            sceneMaterial.map?.dispose()
-            sceneMaterial.map = newSceneTexture
-            sceneMaterial.needsUpdate = true
+            const sceneMaterial = sim.materials.scene as THREE.MeshBasicMaterial;
+            const newSceneTexture = new THREE.CanvasTexture(textureCanvas);
+            newSceneTexture.colorSpace = THREE.SRGBColorSpace;
+            sceneMaterial.map?.dispose();
+            sceneMaterial.map = newSceneTexture;
+            sceneMaterial.needsUpdate = true;
         }
-    }, [textureCanvas])
+    }, [textureCanvas]);
 
     useEffect(() => {
-        if (!mountRef.current || sim.renderer) return
+        if (!mountRef.current || sim.renderer) return;
 
         // On remount (e.g., quality change), reset live params to match new targets.
-        liveParamsRef.current = JSON.parse(
-            JSON.stringify(targetParamsRef.current)
-        )
+        liveParamsRef.current = JSON.parse(JSON.stringify(targetParamsRef.current));
 
-        const createFBO = (
-            width: number,
-            height: number,
-            format: THREE.PixelFormat = THREE.RGBAFormat
-        ) => {
+        const createFBO = (width: number, height: number, format: THREE.PixelFormat = THREE.RGBAFormat) => {
             const fbo = new THREE.WebGLRenderTarget(width, height, {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                type: THREE.HalfFloatType,
-                format: format,
-            })
-            const fbo2 = fbo.clone()
-            return {
-                read: fbo,
-                write: fbo2,
-                swap: function () {
-                    const temp = this.read
-                    this.read = this.write
-                    this.write = temp
-                },
-            }
-        }
+                minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+                type: THREE.HalfFloatType, format: format,
+            });
+            const fbo2 = fbo.clone();
+            return { read: fbo, write: fbo2, swap: function() { const temp = this.read; this.read = this.write; this.write = temp; } };
+        };
 
-        const renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true,
-        })
-        renderer.setSize(
-            mountRef.current.clientWidth,
-            mountRef.current.clientHeight
-        )
-        renderer.outputColorSpace = THREE.SRGBColorSpace
-        mountRef.current.appendChild(renderer.domElement)
-        sim.renderer = renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.domElement.style.touchAction = 'none';
+        mountRef.current.appendChild(renderer.domElement);
+        sim.renderer = renderer;
 
-        const { width, height } = renderer.getSize(new THREE.Vector2())
-        const simWidth = quality.simResolution
-        const simHeight = Math.round(quality.simResolution / (width / height))
-        sim.simHeight = simHeight
+        const { width, height } = renderer.getSize(new THREE.Vector2());
+        const simWidth = quality.simResolution;
+        const simHeight = Math.round(quality.simResolution / (width / height));
+        sim.simHeight = simHeight;
 
         sim.fbo = {
             velocity: createFBO(simWidth, simHeight),
@@ -919,980 +891,504 @@ export const useFluidSimulation = (
             pressure: createFBO(simWidth, simHeight),
             flow: createFBO(simWidth, simHeight),
             ripples: createFBO(simWidth, simHeight, THREE.RGFormat),
-            divergence: new THREE.WebGLRenderTarget(simWidth, simHeight, {
-                minFilter: THREE.NearestFilter,
-                magFilter: THREE.NearestFilter,
-                type: THREE.HalfFloatType,
-                format: THREE.RedFormat,
-            }),
-            curl: new THREE.WebGLRenderTarget(simWidth, simHeight, {
-                minFilter: THREE.NearestFilter,
-                magFilter: THREE.NearestFilter,
-                type: THREE.HalfFloatType,
-                format: THREE.RedFormat,
-            }),
-            caustics: new THREE.WebGLRenderTarget(simWidth, simHeight, {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                type: THREE.HalfFloatType,
-                format: THREE.RedFormat,
-            }),
-            detailNormal: new THREE.WebGLRenderTarget(simWidth, simHeight, {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                type: THREE.HalfFloatType,
-                format: THREE.RGBAFormat,
-            }),
-            scene: new THREE.WebGLRenderTarget(width, height, {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                type: THREE.HalfFloatType,
-                format: THREE.RGBAFormat,
-            }),
-            composited: new THREE.WebGLRenderTarget(width, height, {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                type: THREE.HalfFloatType,
-                format: THREE.RGBAFormat,
-            }),
+            divergence: new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, type: THREE.HalfFloatType, format: THREE.RedFormat }),
+            curl: new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, type: THREE.HalfFloatType, format: THREE.RedFormat }),
+            caustics: new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RedFormat }),
+            detailNormal: new THREE.WebGLRenderTarget(simWidth, simHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RGBAFormat }),
+            scene: new THREE.WebGLRenderTarget(width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RGBAFormat }),
+            composited: new THREE.WebGLRenderTarget(width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.HalfFloatType, format: THREE.RGBAFormat }),
             renderedFrame: createFBO(width, height),
-        }
+        };
 
         if (quality.particleResolution > 0) {
-            sim.fbo.particles = createFBO(
-                quality.particleResolution,
-                quality.particleResolution
-            )
+            sim.fbo.particles = createFBO(quality.particleResolution, quality.particleResolution);
         }
-
-        const simTexelSize = new THREE.Vector2(1 / simWidth, 1 / simHeight)
-
+        
+        const simTexelSize = new THREE.Vector2(1 / simWidth, 1 / simHeight);
+        
         sim.materials = {
-            clear: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.clearShader,
-                uniforms: {
-                    uTexture: { value: null },
-                    uValue: { value: 0.97 },
-                    uClearColor: { value: new THREE.Vector3() },
-                    uUseClearColor: { value: false },
-                },
-            }),
+            clear: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.clearShader, uniforms: { uTexture: { value: null }, uValue: { value: 0.97 }, uClearColor: { value: new THREE.Vector3() }, uUseClearColor: { value: false } } }),
             copy: new THREE.MeshBasicMaterial({ map: null }),
-            splat: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.splatShader,
-                uniforms: {
-                    uTarget: { value: null },
-                    uAspectRatio: { value: width / height },
-                    uColor: { value: new THREE.Vector3() },
-                    uCenter: { value: new THREE.Vector2() },
-                    uRadius: { value: 0.05 },
-                },
-            }),
-            erase: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.eraseShader,
-                uniforms: {
-                    uTarget: { value: null },
-                    uAspectRatio: { value: width / height },
-                    uCenter: { value: new THREE.Vector2() },
-                    uRadius: { value: 0.05 },
-                    uStrength: { value: 0.1 },
-                },
-            }),
-            radialPush: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.radialPushShader,
-                uniforms: {
-                    uTarget: { value: null },
-                    uAspectRatio: { value: width / height },
-                    uCenter: { value: new THREE.Vector2() },
-                    uRadius: { value: 0.05 },
-                    uStrength: { value: 0.2 },
-                },
-            }),
-            advection: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.advectionShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uSource: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                    uDt: { value: 0.0 },
-                    uDissipation: { value: 1.0 },
-                },
-            }),
-            divergence: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.divergenceShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            pressure: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.pressureShader,
-                uniforms: {
-                    uPressure: { value: null },
-                    uDivergence: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            gradientSubtract: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.gradientSubtractShader,
-                uniforms: {
-                    uPressure: { value: null },
-                    uVelocity: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            reactionDiffusion: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.reactionDiffusionShader,
-                uniforms: {
-                    uChemicals: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                    uFeedRate: { value: 0.0 },
-                    uKillRate: { value: 0.0 },
-                },
-            }),
-            curl: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.curlShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            vorticity: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.vorticityShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uCurl: { value: null },
-                    uVorticity: { value: 0.0 },
-                    uDt: { value: 0.0 },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            surfaceTension: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.surfaceTensionShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uDensity: { value: null },
-                    uSurfaceTension: { value: 0.0 },
-                    uDt: { value: 0.0 },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            reactionForce: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.reactionForceShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uChemicals: { value: null },
-                    uReactionForce: { value: 0.0 },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            buoyancy: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.buoyancyShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uTemperature: { value: null },
-                    uBuoyancy: { value: 0.0 },
-                    uAmbientTemperature: { value: 0.0 },
-                    uDt: { value: 0.0 },
-                },
-            }),
-            caustics: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.causticsShader,
-                uniforms: {
-                    uDensityTexture: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                },
-            }),
-            flowMap: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.flowMapShader,
-                uniforms: {
-                    uVelocity: { value: null },
-                    uFlowMap: { value: null },
-                    uFlowSpeed: { value: 0.0 },
-                    uDt: { value: 0.0 },
-                },
-            }),
-            surfaceDetail: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.surfaceDetailShader,
-                uniforms: {
-                    uDensityTexture: { value: null },
-                    uFlowMapTexture: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                    uTime: { value: 0.0 },
-                },
-            }),
-            rippleSplat: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.rippleSplatShader,
-                uniforms: {
-                    uTarget: { value: null },
-                    uAspectRatio: { value: width / height },
-                    uCenter: { value: new THREE.Vector2() },
-                    uPrevCenter: { value: new THREE.Vector2() },
-                    uRadius: { value: 0.05 },
-                    uStrength: { value: 0.1 },
-                },
-            }),
-            ripplePropagate: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.ripplePropagateShader,
-                uniforms: {
-                    uRippleTexture: { value: null },
-                    uTexelSize: { value: simTexelSize },
-                    uRippleSpeed: { value: 0.5 },
-                    uRippleDamping: { value: 0.99 },
-                },
-            }),
-            scene: new THREE.MeshBasicMaterial({
-                map: textureCanvas
-                    ? new THREE.CanvasTexture(textureCanvas)
-                    : null,
-            }),
+            splat: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.splatShader, uniforms: { uTarget: { value: null }, uAspectRatio: { value: width/height }, uColor: { value: new THREE.Vector3() }, uCenter: { value: new THREE.Vector2() }, uRadius: { value: 0.05 } } }),
+            erase: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.eraseShader, uniforms: { uTarget: { value: null }, uAspectRatio: { value: width/height }, uCenter: { value: new THREE.Vector2() }, uRadius: { value: 0.05 }, uStrength: { value: 0.1 } } }),
+            radialPush: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.radialPushShader, uniforms: { uTarget: { value: null }, uAspectRatio: { value: width/height }, uCenter: { value: new THREE.Vector2() }, uRadius: { value: 0.05 }, uStrength: { value: 0.2 } } }),
+            advection: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.advectionShader, uniforms: { uVelocity: { value: null }, uSource: { value: null }, uTexelSize: { value: simTexelSize }, uDt: { value: 0.0 }, uDissipation: { value: 1.0 } } }),
+            divergence: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.divergenceShader, uniforms: { uVelocity: { value: null }, uTexelSize: { value: simTexelSize } } }),
+            pressure: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.pressureShader, uniforms: { uPressure: { value: null }, uDivergence: { value: null }, uTexelSize: { value: simTexelSize } } }),
+            gradientSubtract: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.gradientSubtractShader, uniforms: { uPressure: { value: null }, uVelocity: { value: null }, uTexelSize: { value: simTexelSize } } }),
+            reactionDiffusion: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.reactionDiffusionShader, uniforms: { uChemicals: { value: null }, uTexelSize: { value: simTexelSize }, uFeedRate: { value: 0.0 }, uKillRate: { value: 0.0 } } }),
+            curl: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.curlShader, uniforms: { uVelocity: { value: null }, uTexelSize: { value: simTexelSize } } }),
+            vorticity: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.vorticityShader, uniforms: { uVelocity: { value: null }, uCurl: { value: null }, uVorticity: { value: 0.0 }, uDt: { value: 0.0 }, uTexelSize: { value: simTexelSize } } }),
+            surfaceTension: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.surfaceTensionShader, uniforms: { uVelocity: { value: null }, uDensity: { value: null }, uSurfaceTension: { value: 0.0 }, uDt: { value: 0.0 }, uTexelSize: { value: simTexelSize } } }),
+            reactionForce: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.reactionForceShader, uniforms: { uVelocity: { value: null }, uChemicals: { value: null }, uReactionForce: { value: 0.0 }, uTexelSize: { value: simTexelSize } } }),
+            buoyancy: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.buoyancyShader, uniforms: { uVelocity: { value: null }, uTemperature: { value: null }, uBuoyancy: { value: 0.0 }, uAmbientTemperature: { value: 0.0 }, uDt: { value: 0.0 } } }),
+            caustics: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.causticsShader, uniforms: { uDensityTexture: { value: null }, uTexelSize: { value: simTexelSize } } }),
+            flowMap: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.flowMapShader, uniforms: { uVelocity: { value: null }, uFlowMap: { value: null }, uFlowSpeed: { value: 0.0 }, uDt: { value: 0.0 } } }),
+            surfaceDetail: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.surfaceDetailShader, uniforms: { uDensityTexture: { value: null }, uFlowMapTexture: { value: null }, uTexelSize: { value: simTexelSize }, uTime: { value: 0.0 } } }),
+            rippleSplat: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.rippleSplatShader, uniforms: { uTarget: { value: null }, uAspectRatio: { value: width/height }, uCenter: { value: new THREE.Vector2() }, uPrevCenter: { value: new THREE.Vector2() }, uRadius: { value: 0.05 }, uStrength: { value: 0.1 } } }),
+            ripplePropagate: new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.ripplePropagateShader, uniforms: { uRippleTexture: { value: null }, uTexelSize: { value: simTexelSize }, uRippleSpeed: { value: 0.5 }, uRippleDamping: { value: 0.99 } } }),
+            scene: new THREE.MeshBasicMaterial({ map: textureCanvas ? new THREE.CanvasTexture(textureCanvas) : null }),
             compositing: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.compositingShader,
+                vertexShader: shaders.baseVertexShader, fragmentShader: shaders.compositingShader,
                 uniforms: THREE.UniformsUtils.merge([
                     THREE.UniformsLib.lights,
                     {
-                        uSceneTexture: { value: null },
-                        uVelocityTexture: { value: null },
-                        uDensityTexture: { value: null },
-                        uTemperatureTexture: { value: null },
-                        uReflectionTexture: { value: null },
-                        uDetailNormalTexture: { value: null },
-                        uRippleTexture: { value: null },
-                        uTexelSize: { value: simTexelSize },
-                        uLight1Pos: { value: new THREE.Vector3(0.5, 0.5, 0.5) },
-                        uLight1Color: { value: new THREE.Color(1.0, 1.0, 1.0) },
-                        uLight2Pos: {
-                            value: new THREE.Vector3(-0.5, -0.5, 0.5),
-                        },
-                        uLight2Color: { value: new THREE.Color(0.2, 0.5, 1.0) },
-                        uDisplacementScale: { value: 0.0 },
-                        uVelocityShiftScale: { value: 0.0 },
-                        uDensityShiftScale: { value: 0.0 },
-                        uWaterColor: { value: new THREE.Color(0.0, 0.0, 0.0) },
-                        uVolumeFactor: { value: 0.0 },
-                        uInkStrength: { value: 0.0 },
-                        uShininess: { value: 0.0 },
-                        uFresnelColor: {
-                            value: new THREE.Color(0.0, 0.0, 0.0),
-                        },
-                        uFresnelIntensity: { value: 0.0 },
-                        uGlowColor: { value: new THREE.Color(0.0, 0.0, 0.0) },
-                        uGlowPower: { value: 0.0 },
-                        uWaveSteepness: { value: 0.05 },
-                        uWaveComplexity: { value: 0.0 },
-                        uWaveDetail: { value: 0.0 },
-                        uAmbientTemperature: { value: 0.0 },
-                        uBorderThickness: { value: 0.0 },
-                        uBorderColor: { value: new THREE.Color(0, 0, 0) },
-                        uChiselStrength: { value: 0.0 },
-                        uSSR_Strength: { value: 0.0 },
-                        uSSR_Falloff: { value: 0.0 },
-                        uSSR_Samples: { value: 0.0 },
-                        uSurfaceDetailStrength: { value: 0.0 },
-                        uRippleStrength: { value: 0.0 },
-                    },
-                ]),
+                    uSceneTexture: { value: null }, uVelocityTexture: { value: null }, uDensityTexture: { value: null }, uTemperatureTexture: { value: null }, uReflectionTexture: { value: null }, uDetailNormalTexture: { value: null }, uRippleTexture: { value: null }, uTexelSize: { value: simTexelSize },
+                    uLight1Pos: { value: new THREE.Vector3(0.5, 0.5, 0.5) }, uLight1Color: { value: new THREE.Color(1.0, 1.0, 1.0) }, uLight2Pos: { value: new THREE.Vector3(-0.5, -0.5, 0.5) }, uLight2Color: { value: new THREE.Color(0.2, 0.5, 1.0) },
+                    uDisplacementScale: { value: 0.0 }, uVelocityShiftScale: { value: 0.0 }, uDensityShiftScale: { value: 0.0 }, uWaterColor: { value: new THREE.Color(0.0, 0.0, 0.0) }, uVolumeFactor: { value: 0.0 }, uInkStrength: { value: 0.0 }, uShininess: { value: 0.0 }, uFresnelColor: { value: new THREE.Color(0.0, 0.0, 0.0) }, uFresnelIntensity: { value: 0.0 }, uGlowColor: { value: new THREE.Color(0.0, 0.0, 0.0) }, uGlowPower: { value: 0.0 }, uWaveSteepness: { value: 0.05 }, uWaveComplexity: { value: 0.0 }, uWaveDetail: { value: 0.0 }, uAmbientTemperature: { value: 0.0 }, uBorderThickness: { value: 0.0 }, uBorderColor: { value: new THREE.Color(0,0,0) }, uChiselStrength: { value: 0.0 }, uSSR_Strength: { value: 0.0 }, uSSR_Falloff: { value: 0.0 }, uSSR_Samples: { value: 0.0 }, uSurfaceDetailStrength: { value: 0.0 }, uRippleStrength: { value: 0.0 },
+                    }
+                ])
             }),
             finalPass: new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.finalPassShader,
-                uniforms: {
-                    uFluidResult: { value: null },
-                    uSceneTexture: { value: null },
-                    uDensityTexture: { value: null },
-                    uCausticsTexture: { value: null },
-                    uArtisticBlend: { value: 0.0 },
-                    uCausticsIntensity: { value: 0.0 },
-                },
+                vertexShader: shaders.baseVertexShader, fragmentShader: shaders.finalPassShader,
+                uniforms: { uFluidResult: { value: null }, uSceneTexture: { value: null }, uDensityTexture: { value: null }, uCausticsTexture: { value: null }, uArtisticBlend: { value: 0.0 }, uCausticsIntensity: { value: 0.0 } }
             }),
-        }
+        };
 
         if (quality.particleResolution > 0) {
-            sim.materials.particleSplat = new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.particleSplatShader,
-                uniforms: {
-                    uTarget: { value: null },
-                    uCenter: { value: new THREE.Vector2() },
-                    uRadius: { value: 0.05 },
-                    uIntensity: { value: 0.0 },
-                },
-            })
-            sim.materials.particleUpdate = new THREE.ShaderMaterial({
-                vertexShader: shaders.baseVertexShader,
-                fragmentShader: shaders.particleUpdateShader,
-                uniforms: {
-                    uParticles: { value: null },
-                    uVelocity: { value: null },
-                    uDt: { value: 0.0 },
-                    uParticleAdvection: { value: 0.2 },
-                },
-            })
-            sim.materials.particleRender = new THREE.ShaderMaterial({
-                vertexShader: shaders.particleRenderVS,
-                fragmentShader: shaders.particleRenderFS,
-                uniforms: {
-                    uParticles: { value: null },
-                    uParticleColor: { value: new THREE.Color(1, 1, 1) },
-                    uParticleSize: { value: 2.0 },
-                },
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthTest: false,
-            })
+            sim.materials.particleSplat = new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.particleSplatShader, uniforms: { uTarget: { value: null }, uCenter: { value: new THREE.Vector2() }, uRadius: { value: 0.05 }, uIntensity: { value: 0.0 } } });
+            sim.materials.particleUpdate = new THREE.ShaderMaterial({ vertexShader: shaders.baseVertexShader, fragmentShader: shaders.particleUpdateShader, uniforms: { uParticles: { value: null }, uVelocity: { value: null }, uDt: { value: 0.0 }, uParticleAdvection: { value: 0.2 } } });
+            sim.materials.particleRender = new THREE.ShaderMaterial({ vertexShader: shaders.particleRenderVS, fragmentShader: shaders.particleRenderFS, uniforms: { uParticles: { value: null }, uParticleColor: { value: new THREE.Color(1,1,1) }, uParticleSize: { value: 2.0 } }, transparent: true, blending: THREE.AdditiveBlending, depthTest: false });
 
-            const particleCount =
-                quality.particleResolution * quality.particleResolution
-            const particleGeometry = new THREE.BufferGeometry()
-            const particleUvs = new Float32Array(particleCount * 2)
+            const particleCount = quality.particleResolution * quality.particleResolution;
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleUvs = new Float32Array(particleCount * 2);
             for (let i = 0; i < quality.particleResolution; i++) {
                 for (let j = 0; j < quality.particleResolution; j++) {
-                    const index = (i * quality.particleResolution + j) * 2
-                    particleUvs[index] = j / (quality.particleResolution - 1)
-                    particleUvs[index + 1] =
-                        i / (quality.particleResolution - 1)
+                    const index = (i * quality.particleResolution + j) * 2;
+                    particleUvs[index] = j / (quality.particleResolution - 1);
+                    particleUvs[index + 1] = i / (quality.particleResolution - 1);
                 }
             }
-            particleGeometry.setAttribute(
-                "a_uv",
-                new THREE.BufferAttribute(particleUvs, 2)
-            )
-            const particlePoints = new THREE.Points(
-                particleGeometry,
-                sim.materials.particleRender
-            )
-            sim.particleScene.add(particlePoints)
+            particleGeometry.setAttribute('a_uv', new THREE.BufferAttribute(particleUvs, 2));
+            const particlePoints = new THREE.Points(particleGeometry, sim.materials.particleRender);
+            sim.particleScene.add(particlePoints);
         }
 
-        sim.scene.add(sim.mesh)
+        sim.scene.add(sim.mesh);
+        
+        const blit = (target: THREE.WebGLRenderTarget | null, material: THREE.Material) => {
+            sim.mesh.material = material;
+            sim.renderer!.setRenderTarget(target);
+            sim.renderer!.render(sim.scene, sim.camera);
+        };
+        
+        const clearMaterial = sim.materials.clear as THREE.ShaderMaterial;
+        clearMaterial.uniforms.uUseClearColor.value = true;
+        clearMaterial.uniforms.uClearColor.value.set(1.0, 0.0, 0.0);
+        blit(sim.fbo.density.read, clearMaterial);
+        blit(sim.fbo.density.write, clearMaterial);
+        
+        clearMaterial.uniforms.uClearColor.value.set(params.uAmbientTemperature, 0.0, 0.0);
+        blit(sim.fbo.temperature.read, clearMaterial);
+        blit(sim.fbo.temperature.write, clearMaterial);
 
-        const blit = (
-            target: THREE.WebGLRenderTarget | null,
-            material: THREE.Material
-        ) => {
-            sim.mesh.material = material
-            sim.renderer!.setRenderTarget(target)
-            sim.renderer!.render(sim.scene, sim.camera)
-        }
-
-        const clearMaterial = sim.materials.clear as THREE.ShaderMaterial
-        clearMaterial.uniforms.uUseClearColor.value = true
-        clearMaterial.uniforms.uClearColor.value.set(1.0, 0.0, 0.0)
-        blit(sim.fbo.density.read, clearMaterial)
-        blit(sim.fbo.density.write, clearMaterial)
-
-        clearMaterial.uniforms.uClearColor.value.set(
-            params.uAmbientTemperature,
-            0.0,
-            0.0
-        )
-        blit(sim.fbo.temperature.read, clearMaterial)
-        blit(sim.fbo.temperature.write, clearMaterial)
-
-        clearMaterial.uniforms.uClearColor.value.set(0.0, 0.0, 0.0)
-        blit(sim.fbo.ripples.read, clearMaterial)
-        blit(sim.fbo.ripples.write, clearMaterial)
-
+        clearMaterial.uniforms.uClearColor.value.set(0.0, 0.0, 0.0);
+        blit(sim.fbo.ripples.read, clearMaterial);
+        blit(sim.fbo.ripples.write, clearMaterial);
+        
         if (quality.particleResolution > 0) {
-            clearMaterial.uniforms.uClearColor.value.set(0.0, 0.0, 999, 999)
-            blit(sim.fbo.particles.read, clearMaterial)
-            blit(sim.fbo.particles.write, clearMaterial)
+            clearMaterial.uniforms.uClearColor.value.set(0.0, 0.0, 999, 999);
+            blit(sim.fbo.particles.read, clearMaterial);
+            blit(sim.fbo.particles.write, clearMaterial);
         }
 
-        clearMaterial.uniforms.uUseClearColor.value = false
-
-        let animationFrameId: number
-        const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-        const tempColor = new THREE.Color()
+        clearMaterial.uniforms.uUseClearColor.value = false;
+        
+        let animationFrameId: number;
+        const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+        const tempColor = new THREE.Color();
 
         const animate = () => {
-            update()
-            animationFrameId = requestAnimationFrame(animate)
-        }
+            update();
+            animationFrameId = requestAnimationFrame(animate);
+        };
 
         const update = () => {
-            const now = Date.now()
-            const dt = Math.min((now - sim.lastTime) / 1000, 0.0166)
-            sim.lastTime = now
-            if (!sim.renderer) return
-            const elapsedTime = (now - sim.startTime) / 1000
+            const now = Date.now();
+            const dt = Math.min((now - sim.lastTime) / 1000, 0.0166);
+            sim.lastTime = now;
+            if (!sim.renderer) return;
+            const elapsedTime = (now - sim.startTime) / 1000;
 
             // --- Motion Engine: Animate parameters ---
-            const targetParams = targetParamsRef.current
-            const liveParams = liveParamsRef.current
-            const easing = 0.08
+            const targetParams = targetParamsRef.current;
+            const liveParams = liveParamsRef.current;
+            const easing = 0.08;
 
             for (const key in targetParams) {
-                const targetValue = targetParams[key as keyof AllParams]
-                const liveValue = liveParams[key as keyof AllParams]
-
-                if (
-                    typeof targetValue === "number" &&
-                    typeof liveValue === "number"
-                ) {
-                    ;(liveParams[key as keyof AllParams] as number) = lerp(
-                        liveValue,
-                        targetValue,
-                        easing
-                    )
+                const targetValue = targetParams[key as keyof AllParams];
+                const liveValue = liveParams[key as keyof AllParams];
+                
+                if (typeof targetValue === 'number' && typeof liveValue === 'number') {
+                    (liveParams[key as keyof AllParams] as number) = lerp(liveValue, targetValue, easing);
                 } else if (
-                    typeof targetValue === "object" &&
-                    targetValue !== null &&
-                    "x" in targetValue &&
-                    typeof liveValue === "object" &&
-                    liveValue !== null &&
-                    "x" in liveValue
+                    typeof targetValue === 'object' && targetValue !== null && 'x' in targetValue &&
+                    typeof liveValue === 'object' && liveValue !== null && 'x' in liveValue
                 ) {
-                    ;(liveValue as any).x = lerp(
-                        (liveValue as any).x,
-                        (targetValue as any).x,
-                        easing
-                    )
-                    ;(liveValue as any).y = lerp(
-                        (liveValue as any).y,
-                        (targetValue as any).y,
-                        easing
-                    )
-                    if ("z" in targetValue && "z" in liveValue) {
-                        ;(liveValue as any).z = lerp(
-                            (liveValue as any).z,
-                            (targetValue as any).z,
-                            easing
-                        )
+                    (liveValue as any).x = lerp((liveValue as any).x, (targetValue as any).x, easing);
+                    (liveValue as any).y = lerp((liveValue as any).y, (targetValue as any).y, easing);
+                    if ('z' in targetValue && 'z' in liveValue) {
+                       (liveValue as any).z = lerp((liveValue as any).z, (targetValue as any).z, easing);
                     }
                 }
             }
-
-            sim.config.waveDecay = liveParams.waveDecay
-            sim.config.densityDissipation = liveParams.densityDissipation
-            sim.config.temperatureDissipation =
-                liveParams.temperatureDissipation
+            
+            sim.config.waveDecay = liveParams.waveDecay;
+            sim.config.densityDissipation = liveParams.densityDissipation;
+            sim.config.temperatureDissipation = liveParams.temperatureDissipation;
 
             // Update shader uniforms every frame with live values
-            const allMaterials = Object.values(sim.materials).filter(
-                (m) => (m as THREE.ShaderMaterial).isShaderMaterial
-            )
+            const allMaterials = Object.values(sim.materials).filter(m => (m as THREE.ShaderMaterial).isShaderMaterial);
             Object.entries(liveParams).forEach(([key, value]) => {
-                allMaterials.forEach((mat) => {
-                    const uniform = (mat as THREE.ShaderMaterial).uniforms?.[
-                        key
-                    ]
+                allMaterials.forEach(mat => {
+                    const uniform = (mat as THREE.ShaderMaterial).uniforms?.[key];
                     if (uniform) {
-                        if (
-                            isColor(key) &&
-                            typeof targetParamsRef.current[
-                                key as keyof AllParams
-                            ] === "string"
-                        ) {
-                            tempColor.set(
-                                targetParamsRef.current[
-                                    key as keyof AllParams
-                                ] as string
-                            )
-                            uniform.value.lerp(tempColor, easing)
-                        } else if (key === "uSSR_Strength") {
-                            uniform.value = quality.enableSsr
-                                ? (value as number)
-                                : 0
-                        } else if (
-                            typeof value === "object" &&
-                            value !== null &&
-                            "x" in value
-                        ) {
-                            uniform.value.set(
-                                (value as any).x,
-                                (value as any).y,
-                                (value as any).z
-                            )
+                        if (isColor(key) && typeof targetParamsRef.current[key as keyof AllParams] === 'string') {
+                            tempColor.set(targetParamsRef.current[key as keyof AllParams] as string);
+                            uniform.value.lerp(tempColor, easing);
+                        } else if (key === 'uSSR_Strength') {
+                             uniform.value = quality.enableSsr ? (value as number) : 0;
+                        } else if (typeof value === 'object' && value !== null && 'x' in value) {
+                            uniform.value.set((value as any).x, (value as any).y, (value as any).z);
                         } else {
-                            uniform.value = value
+                            uniform.value = value;
                         }
                     }
-                })
-                if (key === "uWaveSize") {
-                    ;(
-                        (sim.materials.splat as THREE.ShaderMaterial).uniforms
-                            .uRadius as any
-                    ).value = value
+                });
+                if (key === 'uWaveSize') {
+                    ((sim.materials.splat as THREE.ShaderMaterial).uniforms.uRadius as any).value = value;
                 }
-            })
+            });
+            
+            sim.renderer.setViewport(0, 0, quality.simResolution, sim.simHeight);
 
-            sim.renderer.setViewport(0, 0, quality.simResolution, sim.simHeight)
+            const advectionMaterial = sim.materials.advection as THREE.ShaderMaterial;
+            advectionMaterial.uniforms.uDt.value = dt;
+            advectionMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            
+            advectionMaterial.uniforms.uSource.value = sim.fbo.velocity.read.texture;
+            advectionMaterial.uniforms.uDissipation.value = sim.config.waveDecay;
+            blit(sim.fbo.velocity.write, advectionMaterial);
+            sim.fbo.velocity.swap();
+            
+            advectionMaterial.uniforms.uSource.value = sim.fbo.density.read.texture;
+            advectionMaterial.uniforms.uDissipation.value = sim.config.densityDissipation;
+            blit(sim.fbo.density.write, advectionMaterial);
+            sim.fbo.density.swap();
 
-            const advectionMaterial = sim.materials
-                .advection as THREE.ShaderMaterial
-            advectionMaterial.uniforms.uDt.value = dt
-            advectionMaterial.uniforms.uVelocity.value =
-                sim.fbo.velocity.read.texture
+            advectionMaterial.uniforms.uSource.value = sim.fbo.temperature.read.texture;
+            advectionMaterial.uniforms.uDissipation.value = sim.config.temperatureDissipation;
+            blit(sim.fbo.temperature.write, advectionMaterial);
+            sim.fbo.temperature.swap();
 
-            advectionMaterial.uniforms.uSource.value =
-                sim.fbo.velocity.read.texture
-            advectionMaterial.uniforms.uDissipation.value = sim.config.waveDecay
-            blit(sim.fbo.velocity.write, advectionMaterial)
-            sim.fbo.velocity.swap()
-
-            advectionMaterial.uniforms.uSource.value =
-                sim.fbo.density.read.texture
-            advectionMaterial.uniforms.uDissipation.value =
-                sim.config.densityDissipation
-            blit(sim.fbo.density.write, advectionMaterial)
-            sim.fbo.density.swap()
-
-            advectionMaterial.uniforms.uSource.value =
-                sim.fbo.temperature.read.texture
-            advectionMaterial.uniforms.uDissipation.value =
-                sim.config.temperatureDissipation
-            blit(sim.fbo.temperature.write, advectionMaterial)
-            sim.fbo.temperature.swap()
-
-            const buoyancyMaterial = sim.materials
-                .buoyancy as THREE.ShaderMaterial
-            buoyancyMaterial.uniforms.uVelocity.value =
-                sim.fbo.velocity.read.texture
-            buoyancyMaterial.uniforms.uTemperature.value =
-                sim.fbo.temperature.read.texture
-            buoyancyMaterial.uniforms.uDt.value = dt
-            blit(sim.fbo.velocity.write, buoyancyMaterial)
-            sim.fbo.velocity.swap()
+            const buoyancyMaterial = sim.materials.buoyancy as THREE.ShaderMaterial;
+            buoyancyMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            buoyancyMaterial.uniforms.uTemperature.value = sim.fbo.temperature.read.texture;
+            buoyancyMaterial.uniforms.uDt.value = dt;
+            blit(sim.fbo.velocity.write, buoyancyMaterial);
+            sim.fbo.velocity.swap();
 
             for (const p of sim.pointers.values()) {
-                const { button, dx, dy } = p
+                const { button, dx, dy, type } = p;
 
-                if (button === 2) {
-                    const eraseMaterial = sim.materials
-                        .erase as THREE.ShaderMaterial
-                    eraseMaterial.uniforms.uTarget.value =
-                        sim.fbo.density.read.texture
-                    eraseMaterial.uniforms.uCenter.value.set(p.x, p.y)
-                    eraseMaterial.uniforms.uRadius.value =
-                        liveParams.uWaveSize * 0.8
-                    eraseMaterial.uniforms.uStrength.value = 0.1
-                    blit(sim.fbo.density.write, eraseMaterial)
-                    sim.fbo.density.swap()
+                if (button === 2) { 
+                    const eraseMaterial = sim.materials.erase as THREE.ShaderMaterial;
+                    eraseMaterial.uniforms.uTarget.value = sim.fbo.density.read.texture;
+                    eraseMaterial.uniforms.uCenter.value.set(p.x, p.y);
+                    eraseMaterial.uniforms.uRadius.value = liveParams.uWaveSize * 0.8;
+                    eraseMaterial.uniforms.uStrength.value = 0.1;
+                    blit(sim.fbo.density.write, eraseMaterial);
+                    sim.fbo.density.swap();
 
-                    const radialPushMaterial = sim.materials
-                        .radialPush as THREE.ShaderMaterial
-                    radialPushMaterial.uniforms.uTarget.value =
-                        sim.fbo.velocity.read.texture
-                    radialPushMaterial.uniforms.uCenter.value.set(p.x, p.y)
-                    radialPushMaterial.uniforms.uRadius.value =
-                        liveParams.uWaveSize * 1.2
-                    radialPushMaterial.uniforms.uStrength.value = 0.2
-                    blit(sim.fbo.velocity.write, radialPushMaterial)
-                    sim.fbo.velocity.swap()
-                } else if (
-                    Math.abs(dx) > 0 ||
-                    Math.abs(dy) > 0 ||
-                    button === 0
-                ) {
-                    const splatMaterial = sim.materials
-                        .splat as THREE.ShaderMaterial
-                    splatMaterial.uniforms.uCenter.value.set(p.x, p.y)
+                    const radialPushMaterial = sim.materials.radialPush as THREE.ShaderMaterial;
+                    radialPushMaterial.uniforms.uTarget.value = sim.fbo.velocity.read.texture;
+                    radialPushMaterial.uniforms.uCenter.value.set(p.x, p.y);
+                    radialPushMaterial.uniforms.uRadius.value = liveParams.uWaveSize * 1.2;
+                    radialPushMaterial.uniforms.uStrength.value = 0.2;
+                    blit(sim.fbo.velocity.write, radialPushMaterial);
+                    sim.fbo.velocity.swap();
 
-                    splatMaterial.uniforms.uTarget.value =
-                        sim.fbo.velocity.read.texture
-                    const forceMultiplier = button === 0 ? 2.0 : 1.0
-                    splatMaterial.uniforms.uColor.value.set(
-                        dx * 100 * forceMultiplier,
-                        dy * 100 * forceMultiplier,
-                        0
-                    )
-                    blit(sim.fbo.velocity.write, splatMaterial)
-                    sim.fbo.velocity.swap()
+                } else if (Math.abs(dx) > 0 || Math.abs(dy) > 0 || button === 0) { 
+                    const splatMaterial = sim.materials.splat as THREE.ShaderMaterial;
+                    splatMaterial.uniforms.uCenter.value.set(p.x, p.y);
+            
+                    splatMaterial.uniforms.uTarget.value = sim.fbo.velocity.read.texture;
+                    
+                    const isMoving = Math.abs(dx) > 0 || Math.abs(dy) > 0;
+                    // For movement, make touch gentle (like hover) and mouse drag strong.
+                    const forceMultiplier = (type === 'mouse' && button === 0) ? 2.0 : 1.0;
+                    // For stationary interactions, make both mouse click and touch tap strong.
+                    const clickIntensity = (!isMoving && button === 0) ? 0.15 : 0.0;
+                    
+                    splatMaterial.uniforms.uColor.value.set(dx * 100 * forceMultiplier, dy * 100 * forceMultiplier, 0);
+                    blit(sim.fbo.velocity.write, splatMaterial);
+                    sim.fbo.velocity.swap();
+                    
+                    const speed = Math.sqrt(dx * dx + dy * dy);
+                    const moveIntensity = Math.pow(Math.min(speed * 30.0, 1.0), 2.0) * forceMultiplier;
+                    const intensity = moveIntensity + clickIntensity;
 
-                    const speed = Math.sqrt(dx * dx + dy * dy)
-                    const moveIntensity =
-                        Math.pow(Math.min(speed * 30.0, 1.0), 2.0) *
-                        forceMultiplier
-                    const clickIntensity = button === 0 ? 0.15 : 0.0
-                    const intensity = moveIntensity + clickIntensity
-
-                    splatMaterial.uniforms.uTarget.value =
-                        sim.fbo.density.read.texture
-                    splatMaterial.uniforms.uColor.value.set(
-                        0,
-                        intensity * 0.5,
-                        0
-                    )
-                    blit(sim.fbo.density.write, splatMaterial)
-                    sim.fbo.density.swap()
-
-                    splatMaterial.uniforms.uTarget.value =
-                        sim.fbo.temperature.read.texture
-                    const splatTemp = liveParams.uSplatTemperature
-                    splatMaterial.uniforms.uColor.value.set(
-                        splatTemp * intensity,
-                        0,
-                        0
-                    )
-                    blit(sim.fbo.temperature.write, splatMaterial)
-                    sim.fbo.temperature.swap()
+                    splatMaterial.uniforms.uTarget.value = sim.fbo.density.read.texture;
+                    splatMaterial.uniforms.uColor.value.set(0, intensity * 0.5, 0);
+                    blit(sim.fbo.density.write, splatMaterial);
+                    sim.fbo.density.swap();
+            
+                    splatMaterial.uniforms.uTarget.value = sim.fbo.temperature.read.texture;
+                    const splatTemp = liveParams.uSplatTemperature;
+                    splatMaterial.uniforms.uColor.value.set(splatTemp * intensity, 0, 0);
+                    blit(sim.fbo.temperature.write, splatMaterial);
+                    sim.fbo.temperature.swap();
 
                     if (liveParams.uRippleStrength > 0) {
-                        const rippleSplatMaterial = sim.materials
-                            .rippleSplat as THREE.ShaderMaterial
-                        rippleSplatMaterial.uniforms.uTarget.value =
-                            sim.fbo.ripples.read.texture
-                        rippleSplatMaterial.uniforms.uCenter.value.set(p.x, p.y)
-
-                        const prevX =
-                            p.dx === 0 && p.dy === 0 ? p.x : p.x - p.dx
-                        const prevY =
-                            p.dx === 0 && p.dy === 0 ? p.y : p.y - p.dy
-                        rippleSplatMaterial.uniforms.uPrevCenter.value.set(
-                            prevX,
-                            prevY
-                        )
-
-                        rippleSplatMaterial.uniforms.uRadius.value =
-                            liveParams.uWaveSize
-
-                        const hoverStrength = Math.min(speed * 8.0, 0.4)
-                        const clickStrength = button === 0 ? 1.0 : 0
-                        rippleSplatMaterial.uniforms.uStrength.value =
-                            hoverStrength + clickStrength
-
-                        blit(sim.fbo.ripples.write, rippleSplatMaterial)
-                        sim.fbo.ripples.swap()
+                        const rippleSplatMaterial = sim.materials.rippleSplat as THREE.ShaderMaterial;
+                        rippleSplatMaterial.uniforms.uTarget.value = sim.fbo.ripples.read.texture;
+                        rippleSplatMaterial.uniforms.uCenter.value.set(p.x, p.y);
+                        
+                        const prevX = (p.dx === 0 && p.dy === 0) ? p.x : p.x - p.dx;
+                        const prevY = (p.dx === 0 && p.dy === 0) ? p.y : p.y - p.dy;
+                        rippleSplatMaterial.uniforms.uPrevCenter.value.set(prevX, prevY);
+                        
+                        rippleSplatMaterial.uniforms.uRadius.value = liveParams.uWaveSize;
+                        
+                        const hoverStrength = Math.min(speed * 8.0, 0.4);
+                        const clickStrength = button === 0 ? 1.0 : 0;
+                        rippleSplatMaterial.uniforms.uStrength.value = hoverStrength + clickStrength;
+                        
+                        blit(sim.fbo.ripples.write, rippleSplatMaterial);
+                        sim.fbo.ripples.swap();
                     }
 
                     if (quality.particleResolution > 0) {
-                        const particleRate = liveParams.uParticleRate
+                        const particleRate = liveParams.uParticleRate;
                         if (particleRate > 0) {
-                            const particleSplatMaterial = sim.materials
-                                .particleSplat as THREE.ShaderMaterial
-                            const particleIntensity =
-                                speed * particleRate +
-                                (button === 0 ? particleRate * 0.5 : 0.0)
-                            particleSplatMaterial.uniforms.uTarget.value =
-                                sim.fbo.particles.read.texture
-                            particleSplatMaterial.uniforms.uCenter.value.set(
-                                p.x,
-                                p.y
-                            )
-                            particleSplatMaterial.uniforms.uRadius.value =
-                                liveParams.uWaveSize
-                            particleSplatMaterial.uniforms.uIntensity.value =
-                                particleIntensity
-                            blit(sim.fbo.particles.write, particleSplatMaterial)
-                            sim.fbo.particles.swap()
+                            const particleSplatMaterial = sim.materials.particleSplat as THREE.ShaderMaterial;
+                            const particleIntensity = (speed * particleRate) + (button === 0 ? particleRate * 0.5 : 0.0);
+                            particleSplatMaterial.uniforms.uTarget.value = sim.fbo.particles.read.texture;
+                            particleSplatMaterial.uniforms.uCenter.value.set(p.x, p.y);
+                            particleSplatMaterial.uniforms.uRadius.value = liveParams.uWaveSize;
+                            particleSplatMaterial.uniforms.uIntensity.value = particleIntensity;
+                            blit(sim.fbo.particles.write, particleSplatMaterial);
+                            sim.fbo.particles.swap();
                         }
                     }
                 }
-                p.dx = 0
-                p.dy = 0
-            }
-
+                p.dx = 0;
+                p.dy = 0;
+            };
+            
             if (quality.particleResolution > 0) {
-                sim.renderer.setViewport(
-                    0,
-                    0,
-                    quality.particleResolution,
-                    quality.particleResolution
-                )
-                const particleUpdateMaterial = sim.materials
-                    .particleUpdate as THREE.ShaderMaterial
-                particleUpdateMaterial.uniforms.uParticles.value =
-                    sim.fbo.particles.read.texture
-                particleUpdateMaterial.uniforms.uVelocity.value =
-                    sim.fbo.velocity.read.texture
-                particleUpdateMaterial.uniforms.uDt.value = dt
-                blit(sim.fbo.particles.write, particleUpdateMaterial)
-                sim.fbo.particles.swap()
-                sim.renderer.setViewport(
-                    0,
-                    0,
-                    quality.simResolution,
-                    sim.simHeight
-                )
+                sim.renderer.setViewport(0, 0, quality.particleResolution, quality.particleResolution);
+                const particleUpdateMaterial = sim.materials.particleUpdate as THREE.ShaderMaterial;
+                particleUpdateMaterial.uniforms.uParticles.value = sim.fbo.particles.read.texture;
+                particleUpdateMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+                particleUpdateMaterial.uniforms.uDt.value = dt;
+                blit(sim.fbo.particles.write, particleUpdateMaterial);
+                sim.fbo.particles.swap();
+                sim.renderer.setViewport(0, 0, quality.simResolution, sim.simHeight);
             }
 
-            const reactionDiffusionMaterial = sim.materials
-                .reactionDiffusion as THREE.ShaderMaterial
-            reactionDiffusionMaterial.uniforms.uChemicals.value =
-                sim.fbo.density.read.texture
-            for (let i = 0; i < REACTION_DIFFUSION_ITERATIONS; i++) {
-                blit(sim.fbo.density.write, reactionDiffusionMaterial)
-                sim.fbo.density.swap()
-                reactionDiffusionMaterial.uniforms.uChemicals.value =
-                    sim.fbo.density.read.texture
+            const reactionDiffusionMaterial = sim.materials.reactionDiffusion as THREE.ShaderMaterial;
+            reactionDiffusionMaterial.uniforms.uChemicals.value = sim.fbo.density.read.texture;
+            for(let i = 0; i < REACTION_DIFFUSION_ITERATIONS; i++) {
+                blit(sim.fbo.density.write, reactionDiffusionMaterial);
+                sim.fbo.density.swap();
+                reactionDiffusionMaterial.uniforms.uChemicals.value = sim.fbo.density.read.texture;
             }
 
-            const reactionForceMaterial = sim.materials
-                .reactionForce as THREE.ShaderMaterial
-            reactionForceMaterial.uniforms.uVelocity.value =
-                sim.fbo.velocity.read.texture
-            reactionForceMaterial.uniforms.uChemicals.value =
-                sim.fbo.density.read.texture
-            blit(sim.fbo.velocity.write, reactionForceMaterial)
-            sim.fbo.velocity.swap()
+            const reactionForceMaterial = sim.materials.reactionForce as THREE.ShaderMaterial;
+            reactionForceMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            reactionForceMaterial.uniforms.uChemicals.value = sim.fbo.density.read.texture;
+            blit(sim.fbo.velocity.write, reactionForceMaterial);
+            sim.fbo.velocity.swap();
 
-            ;(
-                sim.materials.curl as THREE.ShaderMaterial
-            ).uniforms.uVelocity.value = sim.fbo.velocity.read.texture
-            blit(sim.fbo.curl, sim.materials.curl)
+            (sim.materials.curl as THREE.ShaderMaterial).uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            blit(sim.fbo.curl, sim.materials.curl);
 
-            const vorticityMaterial = sim.materials
-                .vorticity as THREE.ShaderMaterial
-            vorticityMaterial.uniforms.uVelocity.value =
-                sim.fbo.velocity.read.texture
-            vorticityMaterial.uniforms.uCurl.value = sim.fbo.curl.texture
-            vorticityMaterial.uniforms.uDt.value = dt
-            blit(sim.fbo.velocity.write, vorticityMaterial)
-            sim.fbo.velocity.swap()
+            const vorticityMaterial = sim.materials.vorticity as THREE.ShaderMaterial;
+            vorticityMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            vorticityMaterial.uniforms.uCurl.value = sim.fbo.curl.texture;
+            vorticityMaterial.uniforms.uDt.value = dt;
+            blit(sim.fbo.velocity.write, vorticityMaterial);
+            sim.fbo.velocity.swap();
 
-            const surfaceTensionMaterial = sim.materials
-                .surfaceTension as THREE.ShaderMaterial
-            surfaceTensionMaterial.uniforms.uVelocity.value =
-                sim.fbo.velocity.read.texture
-            surfaceTensionMaterial.uniforms.uDensity.value =
-                sim.fbo.density.read.texture
-            surfaceTensionMaterial.uniforms.uDt.value = dt
-            blit(sim.fbo.velocity.write, surfaceTensionMaterial)
-            sim.fbo.velocity.swap()
+            const surfaceTensionMaterial = sim.materials.surfaceTension as THREE.ShaderMaterial;
+            surfaceTensionMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            surfaceTensionMaterial.uniforms.uDensity.value = sim.fbo.density.read.texture;
+            surfaceTensionMaterial.uniforms.uDt.value = dt;
+            blit(sim.fbo.velocity.write, surfaceTensionMaterial);
+            sim.fbo.velocity.swap();
 
-            ;(
-                sim.materials.divergence as THREE.ShaderMaterial
-            ).uniforms.uVelocity.value = sim.fbo.velocity.read.texture
-            blit(sim.fbo.divergence, sim.materials.divergence)
+            (sim.materials.divergence as THREE.ShaderMaterial).uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            blit(sim.fbo.divergence, sim.materials.divergence);
+            
+            clearMaterial.uniforms.uTexture.value = sim.fbo.pressure.read.texture;
+            clearMaterial.uniforms.uValue.value = 0.0;
+            blit(sim.fbo.pressure.write, clearMaterial);
+            sim.fbo.pressure.swap();
 
-            clearMaterial.uniforms.uTexture.value =
-                sim.fbo.pressure.read.texture
-            clearMaterial.uniforms.uValue.value = 0.0
-            blit(sim.fbo.pressure.write, clearMaterial)
-            sim.fbo.pressure.swap()
-
-            const pressureMaterial = sim.materials
-                .pressure as THREE.ShaderMaterial
-            pressureMaterial.uniforms.uDivergence.value =
-                sim.fbo.divergence.texture
+            const pressureMaterial = sim.materials.pressure as THREE.ShaderMaterial;
+            pressureMaterial.uniforms.uDivergence.value = sim.fbo.divergence.texture;
             for (let i = 0; i < PRESSURE_ITERATIONS; i++) {
-                pressureMaterial.uniforms.uPressure.value =
-                    sim.fbo.pressure.read.texture
-                blit(sim.fbo.pressure.write, pressureMaterial)
-                sim.fbo.pressure.swap()
+                pressureMaterial.uniforms.uPressure.value = sim.fbo.pressure.read.texture;
+                blit(sim.fbo.pressure.write, pressureMaterial);
+                sim.fbo.pressure.swap();
             }
 
-            const gradientSubtractMaterial = sim.materials
-                .gradientSubtract as THREE.ShaderMaterial
-            gradientSubtractMaterial.uniforms.uPressure.value =
-                sim.fbo.pressure.read.texture
-            gradientSubtractMaterial.uniforms.uVelocity.value =
-                sim.fbo.velocity.read.texture
-            blit(sim.fbo.velocity.write, gradientSubtractMaterial)
-            sim.fbo.velocity.swap()
+            const gradientSubtractMaterial = sim.materials.gradientSubtract as THREE.ShaderMaterial;
+            gradientSubtractMaterial.uniforms.uPressure.value = sim.fbo.pressure.read.texture;
+            gradientSubtractMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            blit(sim.fbo.velocity.write, gradientSubtractMaterial);
+            sim.fbo.velocity.swap();
 
-            const ripplePropagateMaterial = sim.materials
-                .ripplePropagate as THREE.ShaderMaterial
-            ripplePropagateMaterial.uniforms.uRippleTexture.value =
-                sim.fbo.ripples.read.texture
-            blit(sim.fbo.ripples.write, ripplePropagateMaterial)
-            sim.fbo.ripples.swap()
+            const ripplePropagateMaterial = sim.materials.ripplePropagate as THREE.ShaderMaterial;
+            ripplePropagateMaterial.uniforms.uRippleTexture.value = sim.fbo.ripples.read.texture;
+            blit(sim.fbo.ripples.write, ripplePropagateMaterial);
+            sim.fbo.ripples.swap();
 
-            const flowMapMaterial = sim.materials
-                .flowMap as THREE.ShaderMaterial
-            flowMapMaterial.uniforms.uVelocity.value =
-                sim.fbo.velocity.read.texture
-            flowMapMaterial.uniforms.uFlowMap.value = sim.fbo.flow.read.texture
-            flowMapMaterial.uniforms.uDt.value = dt
-            blit(sim.fbo.flow.write, flowMapMaterial)
-            sim.fbo.flow.swap()
+            const flowMapMaterial = sim.materials.flowMap as THREE.ShaderMaterial;
+            flowMapMaterial.uniforms.uVelocity.value = sim.fbo.velocity.read.texture;
+            flowMapMaterial.uniforms.uFlowMap.value = sim.fbo.flow.read.texture;
+            flowMapMaterial.uniforms.uDt.value = dt;
+            blit(sim.fbo.flow.write, flowMapMaterial);
+            sim.fbo.flow.swap();
 
-            const surfaceDetailMaterial = sim.materials
-                .surfaceDetail as THREE.ShaderMaterial
-            surfaceDetailMaterial.uniforms.uTime.value = elapsedTime
-            surfaceDetailMaterial.uniforms.uDensityTexture.value =
-                sim.fbo.density.read.texture
-            surfaceDetailMaterial.uniforms.uFlowMapTexture.value =
-                sim.fbo.flow.read.texture
-            blit(sim.fbo.detailNormal, surfaceDetailMaterial)
+            const surfaceDetailMaterial = sim.materials.surfaceDetail as THREE.ShaderMaterial;
+            surfaceDetailMaterial.uniforms.uTime.value = elapsedTime;
+            surfaceDetailMaterial.uniforms.uDensityTexture.value = sim.fbo.density.read.texture;
+            surfaceDetailMaterial.uniforms.uFlowMapTexture.value = sim.fbo.flow.read.texture;
+            blit(sim.fbo.detailNormal, surfaceDetailMaterial);
 
-            const causticsMaterial = sim.materials
-                .caustics as THREE.ShaderMaterial
-            causticsMaterial.uniforms.uDensityTexture.value =
-                sim.fbo.density.read.texture
-            blit(sim.fbo.caustics, causticsMaterial)
+            const causticsMaterial = sim.materials.caustics as THREE.ShaderMaterial;
+            causticsMaterial.uniforms.uDensityTexture.value = sim.fbo.density.read.texture;
+            blit(sim.fbo.caustics, causticsMaterial);
+            
+            const { width, height } = sim.renderer.getSize(new THREE.Vector2());
+            sim.renderer.setViewport(0, 0, width, height);
+            blit(sim.fbo.scene, sim.materials.scene);
+            
+            const compositingMaterial = sim.materials.compositing as THREE.ShaderMaterial;
+            compositingMaterial.uniforms.uSceneTexture.value = sim.fbo.scene.texture;
+            compositingMaterial.uniforms.uVelocityTexture.value = sim.fbo.velocity.read.texture;
+            compositingMaterial.uniforms.uDensityTexture.value = sim.fbo.density.read.texture;
+            compositingMaterial.uniforms.uTemperatureTexture.value = sim.fbo.temperature.read.texture;
+            compositingMaterial.uniforms.uReflectionTexture.value = sim.fbo.renderedFrame.read.texture;
+            compositingMaterial.uniforms.uDetailNormalTexture.value = sim.fbo.detailNormal.texture;
+            compositingMaterial.uniforms.uRippleTexture.value = sim.fbo.ripples.read.texture;
+            blit(sim.fbo.composited, compositingMaterial);
 
-            const { width, height } = sim.renderer.getSize(new THREE.Vector2())
-            sim.renderer.setViewport(0, 0, width, height)
-            blit(sim.fbo.scene, sim.materials.scene)
-
-            const compositingMaterial = sim.materials
-                .compositing as THREE.ShaderMaterial
-            compositingMaterial.uniforms.uSceneTexture.value =
-                sim.fbo.scene.texture
-            compositingMaterial.uniforms.uVelocityTexture.value =
-                sim.fbo.velocity.read.texture
-            compositingMaterial.uniforms.uDensityTexture.value =
-                sim.fbo.density.read.texture
-            compositingMaterial.uniforms.uTemperatureTexture.value =
-                sim.fbo.temperature.read.texture
-            compositingMaterial.uniforms.uReflectionTexture.value =
-                sim.fbo.renderedFrame.read.texture
-            compositingMaterial.uniforms.uDetailNormalTexture.value =
-                sim.fbo.detailNormal.texture
-            compositingMaterial.uniforms.uRippleTexture.value =
-                sim.fbo.ripples.read.texture
-            blit(sim.fbo.composited, compositingMaterial)
-
-            const finalPassMaterial = sim.materials
-                .finalPass as THREE.ShaderMaterial
-            finalPassMaterial.uniforms.uFluidResult.value =
-                sim.fbo.composited.texture
-            finalPassMaterial.uniforms.uSceneTexture.value =
-                sim.fbo.scene.texture
-            finalPassMaterial.uniforms.uDensityTexture.value =
-                sim.fbo.density.read.texture
-            finalPassMaterial.uniforms.uCausticsTexture.value =
-                sim.fbo.caustics.texture
-            blit(sim.fbo.renderedFrame.write, finalPassMaterial)
-
-            const copyMaterial = sim.materials.copy as THREE.MeshBasicMaterial
-            copyMaterial.map = sim.fbo.renderedFrame.write.texture
-            blit(null, copyMaterial)
-
+            const finalPassMaterial = sim.materials.finalPass as THREE.ShaderMaterial;
+            finalPassMaterial.uniforms.uFluidResult.value = sim.fbo.composited.texture;
+            finalPassMaterial.uniforms.uSceneTexture.value = sim.fbo.scene.texture;
+            finalPassMaterial.uniforms.uDensityTexture.value = sim.fbo.density.read.texture;
+            finalPassMaterial.uniforms.uCausticsTexture.value = sim.fbo.caustics.texture;
+            blit(sim.fbo.renderedFrame.write, finalPassMaterial);
+            
+            const copyMaterial = sim.materials.copy as THREE.MeshBasicMaterial;
+            copyMaterial.map = sim.fbo.renderedFrame.write.texture;
+            blit(null, copyMaterial);
+            
             if (quality.particleResolution > 0) {
-                ;(
-                    sim.materials.particleRender as THREE.ShaderMaterial
-                ).uniforms.uParticles.value = sim.fbo.particles.read.texture
-                renderer.autoClearColor = false
-                renderer.render(sim.particleScene, sim.camera)
-                renderer.autoClearColor = true
+                (sim.materials.particleRender as THREE.ShaderMaterial).uniforms.uParticles.value = sim.fbo.particles.read.texture;
+                renderer.autoClearColor = false;
+                renderer.render(sim.particleScene, sim.camera);
+                renderer.autoClearColor = true;
             }
 
-            sim.fbo.renderedFrame.swap()
-        }
+            sim.fbo.renderedFrame.swap();
+        };
 
-        sim.startTime = sim.lastTime = Date.now()
-        sim.pointers = new Map()
+        sim.startTime = sim.lastTime = Date.now();
+        sim.pointers = new Map();
 
         const getPointerPos = (e: PointerEvent) => {
-            const rect = (
-                sim.renderer!.domElement as HTMLElement
-            ).getBoundingClientRect()
-            const x = (e.clientX - rect.left) / rect.width
-            const y = 1.0 - (e.clientY - rect.top) / rect.height
-            return { x, y }
-        }
+            const rect = (sim.renderer!.domElement as HTMLElement).getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = 1.0 - (e.clientY - rect.top) / rect.height;
+            return { x, y };
+        };
 
         const handlePointerDown = (e: PointerEvent) => {
-            const { x, y } = getPointerPos(e)
-            const pointer = sim.pointers.get(e.pointerId) || {
-                id: e.pointerId,
-                x,
-                y,
-                dx: 0,
-                dy: 0,
-                button: e.button,
-            }
-            pointer.button = e.button
-            pointer.x = x
-            pointer.y = y
-            sim.pointers.set(e.pointerId, pointer)
-        }
-        const handlePointerUp = (e: PointerEvent) =>
-            sim.pointers.delete(e.pointerId)
-
+            const { x, y } = getPointerPos(e);
+            const pointer = sim.pointers.get(e.pointerId) || { id: e.pointerId, x, y, dx: 0, dy: 0, button: e.button, type: e.pointerType };
+            pointer.button = e.button;
+            pointer.x = x;
+            pointer.y = y;
+            pointer.type = e.pointerType;
+            sim.pointers.set(e.pointerId, pointer);
+        };
+        const handlePointerUp = (e: PointerEvent) => sim.pointers.delete(e.pointerId);
+        
         const handlePointerMove = (e: PointerEvent) => {
-            if (e.buttons === 0 && !e.isPrimary) return
-            const { x, y } = getPointerPos(e)
-            let pointer = sim.pointers.get(e.pointerId)
+            if (e.buttons === 0 && !e.isPrimary) return;
+            const { x, y } = getPointerPos(e);
+            let pointer = sim.pointers.get(e.pointerId);
             if (!pointer) {
-                handlePointerDown(e)
-                pointer = sim.pointers.get(e.pointerId)
+                handlePointerDown(e);
+                pointer = sim.pointers.get(e.pointerId);
             }
             if (pointer) {
-                pointer.dx = x - pointer.x
-                pointer.dy = y - pointer.y
-                pointer.x = x
-                pointer.y = y
-                if (e.buttons === 0) pointer.button = -1
+                pointer.dx = x - pointer.x;
+                pointer.dy = y - pointer.y;
+                pointer.x = x;
+                pointer.y = y;
+                // For mouse hover, set button to -1 to signify a hover state.
+                // Touch events will retain their button state from pointerdown.
+                if(e.pointerType === 'mouse' && e.buttons === 0) {
+                    pointer.button = -1;
+                }
             }
-        }
-
+        };
+        
         // FIX: Replaced anonymous function with a named function reference to ensure correct removal.
-        const preventContextMenu = (e: Event) => e.preventDefault()
-
-        const domElement = renderer.domElement
-        domElement.addEventListener("pointerdown", handlePointerDown)
-        domElement.addEventListener("pointerup", handlePointerUp)
-        domElement.addEventListener("pointercancel", handlePointerUp)
-        domElement.addEventListener("pointerleave", handlePointerUp)
-        domElement.addEventListener("pointermove", handlePointerMove)
-        domElement.addEventListener("contextmenu", preventContextMenu)
+        const preventContextMenu = (e: Event) => e.preventDefault();
+        
+        const domElement = renderer.domElement;
+        domElement.addEventListener('pointerdown', handlePointerDown);
+        domElement.addEventListener('pointerup', handlePointerUp);
+        domElement.addEventListener('pointercancel', handlePointerUp);
+        domElement.addEventListener('pointerleave', handlePointerUp);
+        domElement.addEventListener('pointermove', handlePointerMove);
+        domElement.addEventListener('contextmenu', preventContextMenu);
 
         const handleResize = () => {
-            if (!mountRef.current || !sim.renderer) return
-            const { clientWidth, clientHeight } = mountRef.current
-            renderer.setSize(clientWidth, clientHeight)
-            ;(
-                sim.materials.splat as THREE.ShaderMaterial
-            ).uniforms.uAspectRatio.value = clientWidth / clientHeight
-            ;(
-                sim.materials.erase as THREE.ShaderMaterial
-            ).uniforms.uAspectRatio.value = clientWidth / clientHeight
-            ;(
-                sim.materials.radialPush as THREE.ShaderMaterial
-            ).uniforms.uAspectRatio.value = clientWidth / clientHeight
-            ;(
-                sim.materials.rippleSplat as THREE.ShaderMaterial
-            ).uniforms.uAspectRatio.value = clientWidth / clientHeight
-            sim.fbo.scene.setSize(clientWidth, clientHeight)
-            sim.fbo.composited.setSize(clientWidth, clientHeight)
-            sim.fbo.renderedFrame.read.setSize(clientWidth, clientHeight)
-            sim.fbo.renderedFrame.write.setSize(clientWidth, clientHeight)
-        }
-        window.addEventListener("resize", handleResize)
-
-        animate()
+            if (!mountRef.current || !sim.renderer) return;
+            const { clientWidth, clientHeight } = mountRef.current;
+            renderer.setSize(clientWidth, clientHeight);
+            (sim.materials.splat as THREE.ShaderMaterial).uniforms.uAspectRatio.value = clientWidth / clientHeight;
+            (sim.materials.erase as THREE.ShaderMaterial).uniforms.uAspectRatio.value = clientWidth / clientHeight;
+            (sim.materials.radialPush as THREE.ShaderMaterial).uniforms.uAspectRatio.value = clientWidth / clientHeight;
+            (sim.materials.rippleSplat as THREE.ShaderMaterial).uniforms.uAspectRatio.value = clientWidth / clientHeight;
+            sim.fbo.scene.setSize(clientWidth, clientHeight);
+            sim.fbo.composited.setSize(clientWidth, clientHeight);
+            sim.fbo.renderedFrame.read.setSize(clientWidth, clientHeight);
+            sim.fbo.renderedFrame.write.setSize(clientWidth, clientHeight);
+        };
+        window.addEventListener('resize', handleResize);
+        
+        animate();
 
         return () => {
-            cancelAnimationFrame(animationFrameId)
-            window.removeEventListener("resize", handleResize)
-            domElement.removeEventListener("pointerdown", handlePointerDown)
-            domElement.removeEventListener("pointerup", handlePointerUp)
-            domElement.removeEventListener("pointercancel", handlePointerUp)
-            domElement.removeEventListener("pointerleave", handlePointerUp)
-            domElement.removeEventListener("pointermove", handlePointerMove)
+            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener('resize', handleResize);
+            domElement.removeEventListener('pointerdown', handlePointerDown);
+            domElement.removeEventListener('pointerup', handlePointerUp);
+            domElement.removeEventListener('pointercancel', handlePointerUp);
+            domElement.removeEventListener('pointerleave', handlePointerUp);
+            domElement.removeEventListener('pointermove', handlePointerMove);
             // FIX: Use the same named function for removal.
-            domElement.removeEventListener("contextmenu", preventContextMenu)
-            Object.values(sim.materials).forEach((material) =>
-                material?.dispose()
-            )
-            Object.values(sim.fbo).forEach((fbo) => {
-                fbo.read?.dispose()
-                fbo.write?.dispose()
-                fbo.dispose?.()
-            })
-            ;(sim.materials.scene as THREE.MeshBasicMaterial)?.map?.dispose()
-            renderer.dispose()
-            if (
-                mountRef.current &&
-                renderer.domElement &&
-                mountRef.current.contains(renderer.domElement)
-            ) {
-                mountRef.current.removeChild(renderer.domElement)
+            domElement.removeEventListener('contextmenu', preventContextMenu);
+            Object.values(sim.materials).forEach(material => material?.dispose());
+            Object.values(sim.fbo).forEach(fbo => {
+                fbo.read?.dispose();
+                fbo.write?.dispose();
+                fbo.dispose?.();
+            });
+            (sim.materials.scene as THREE.MeshBasicMaterial)?.map?.dispose();
+            renderer.dispose();
+            if (mountRef.current && renderer.domElement && mountRef.current.contains(renderer.domElement)) {
+                mountRef.current.removeChild(renderer.domElement);
             }
-        }
-    }, [quality.simResolution, quality.particleResolution]) // Re-run effect only when resolution changes
-}
+        };
+    }, [quality.simResolution, quality.particleResolution]); // Re-run effect only when resolution changes
+};

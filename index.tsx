@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import MergedFluidSimulation from './src/components/NewComponent';
+import MergedFluidSimulation from './Flattened/NewComponent';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
